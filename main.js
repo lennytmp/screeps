@@ -1,6 +1,6 @@
 var roleHarvester = require('role.harvester');
 
-var attack = false;
+var attack = true;
 
 module.exports.loop = function () {
 
