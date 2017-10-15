@@ -15,6 +15,9 @@ $ npm install
 ```
 **NOTE**: You may *optionally* install gulp globally with `npm install gulp -g`
 
+For typescript syntax highlighting in vim, consider using
+https://github.com/leafgarland/typescript-vim
+
 ### Set up your crededentials
 
 Create a copy of `screeps.example.js` and call it `screeps.js`
