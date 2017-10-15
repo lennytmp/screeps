@@ -1997,9 +1997,10 @@ interface StructureSpawn extends OwnedStructure {
      * ERR_RCL_NOT_ENOUGH	-14	Your Room Controller level is not enough to use this spawn.
      * @param body An array describing the new creep’s body. Should contain 1 to 50 elements with one of these constants: WORK, MOVE, CARRY, ATTACK, RANGED_ATTACK, HEAL, TOUGH, CLAIM
      * @param name The name of a new creep. It should be unique creep name, i.e. the Game.creeps object should not contain another creep with the same name (hash key). If not defined, a random name will be generated.
+     * @param opts An object with additional options for the spawning process. 
      * @param memory The memory of a new creep. If provided, it will be immediately stored into Memory.creeps[name].
      */
-    createCreep(body: string[], name?: string, memory?: any): number | string;
+    spawnCreep(body: string[], name?: string, opts?: any): number | string;
     /**
      * Destroy this spawn immediately.
      */

@@ -1,3 +1,5 @@
 screeps.js
 node_modules
 *.swp
+.rpt2_cache/
+src/npm-debug.log
