@@ -1,8 +1,8 @@
-export function run(creep: Creep, src: number): void {
+export function run(creep: Creep, src: string): void {
   if (creep.carry.energy! < creep.carryCapacity) {
-    let sources = <Source[]>creep.room.find(FIND_SOURCES);
-    if(creep.harvest(sources[src]) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(sources[src]);
+    let source = <Source>Game.getObjectById(src);
+    if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
+      creep.moveTo(source);
     }
   } else {
     if(creep.transfer(Game.spawns['Spawn1']!, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
