@@ -9,11 +9,11 @@ export class HarvesterManager extends Manager.Manager {
     var h: number = 0;
     _.forEach(this.minions, function(minion: Creep) {
         h++;
-        if (h < 3) {
+        if (h < 4) {
           Harvester.run(minion, 0);
           return true;
         }
-        if (h < 5) {
+        if (h < 6) {
           Harvester.run(minion, 3);
           return true;
         }
