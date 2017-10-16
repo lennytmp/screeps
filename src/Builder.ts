@@ -13,9 +13,9 @@ export function run(creep: Creep): void {
       }
     }
   } else {
-    var sources = <Source[]>creep.room.find(FIND_SOURCES);
-    if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}});
+    var spawner = Game.spawns['Spawn1'];
+    if (creep.withdraw(spawner, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+      creep.moveTo(spawner, {visualizePathStyle: {stroke: '#ffaa00'}});
     }
   }
 }
