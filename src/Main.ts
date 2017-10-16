@@ -46,15 +46,15 @@ export function loop() {
         return true;
     });
     if (harvesters < 10) {
-      Game.spawns['Spawn1'].spawnCreep([WORK, CARRY, MOVE],
+      Game.spawns['Spawn1'].spawnCreep([WORK, WORK, CARRY, MOVE],
                                        'Harvester'+ (Math.random()));
-    } else if (builders == 0) {
-      Game.spawns['Spawn1'].spawnCreep([WORK, CARRY, MOVE],
-                                       'Builder'+ (Math.random()));
-    } else if (upgraders == 0) {
+    } else if (upgraders <= 2) {
       Game.spawns['Spawn1'].spawnCreep([WORK, CARRY, MOVE],
                                        'Upgrader'+ (Math.random()));
-    } else if (fighters < 10) {
+    } else if (builders < 2) {
+      Game.spawns['Spawn1'].spawnCreep([WORK, CARRY, CARRY, MOVE],
+                                       'Builder'+ (Math.random()));
+    } else if (fighters < 1) {
       Game.spawns['Spawn1'].spawnCreep(
         [TOUGH, TOUGH, MOVE, MOVE, RANGED_ATTACK],
         'Fighter'+ (Math.random()));
