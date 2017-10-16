@@ -8,26 +8,23 @@ export class BuilderManager extends Manager.Manager {
   commandMinions(): void {
     var spawner = Game.spawns['Spawn1'];
     // Create construction sites if needed
-    _.forEach(Game.rooms, function(room: Room) {
-        let targets = <ConstructionSite[]>room.find(FIND_CONSTRUCTION_SITES);
-        if (targets.length > 0) {
-          return true;
-        }
-        let sources = <Source[]>room.find(FIND_SOURCES);
-        for (let j = 0; j < sources.length; j++) {
-          if (j == 2) {
-            continue; // danger here. TODO: dehardoce this
+    if (!existConstruction()) {
+      _.forEach(Game.rooms, function(room: Room) {
+          let sources = <Source[]>room.find(FIND_SOURCES);
+          for (let j = 0; j < sources.length; j++) {
+            if (j == 2) {
+              continue; // danger here. TODO: dehardoce this
+            }
+            let path = room.findPath(spawner.pos, sources[j].pos, {
+              ignoreCreeps: true
+            });
+            for (let i = 0; i < path.length; i++) {
+              room.createConstructionSite(path[i].x, path[i].y, STRUCTURE_ROAD);
+            }
           }
-          let path = room.findPath(spawner.pos, sources[j].pos, {
-            ignoreCreeps: true
-          });
-          for (let i = 0; i < path.length; i++) {
-            room.createConstructionSite(path[i].x, path[i].y, STRUCTURE_ROAD);
-          }
-        }
-        return false; // only one room per tick
-    });
-
+          return false; // only one room per tick
+      });
+    }
     _.forEach(this.minions, function(minion: Creep) {
         Builder.run(minion);
     });
@@ -46,3 +43,10 @@ export class BuilderManager extends Manager.Manager {
   }
 }
 
+function existConstruction() {
+  let targets = Game.constructionSites;
+  for (var key in targets) {
+    return true;
+  }
+  return false;
+}

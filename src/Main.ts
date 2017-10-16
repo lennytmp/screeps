@@ -29,8 +29,11 @@ export function loop() {
         });
     });
 
-    // get orders
     let spawner = Game.spawns['Spawn1'];
+    // renew creeps by spawner
+    renewCreeps(spawner);
+
+    // get orders
     let requests: Mngr.SpawnRequest[] = []; //TODO: this should be heap.
     _.forEach(managers, function(manager: Mngr.Manager) {
         requests = requests.concat(
@@ -53,8 +56,23 @@ export function loop() {
     _.forEach(managers, function(manager: Mngr.Manager) {
         manager.commandMinions();
     });
+
   } catch(e) {
     console.log(`Error:\n${ErrorMapper.getMappedStack(e)}`);
   }
+}
+
+function renewCreeps(spawner: Spawn): void {
+  let creepsAround = spawner.room.lookForAtArea(LOOK_CREEPS,
+                             spawner.pos.y - 1,
+                             spawner.pos.x - 1,
+                             spawner.pos.y + 1,
+                             spawner.pos.x + 1,
+                             true);
+  _.forEach(creepsAround, function(neighbor: LookAtResultWithPos) {
+      if (neighbor.creep && neighbor.creep.ticksToLive < 1000) {
+        spawner.renewCreep(neighbor.creep);
+      }
+  });
 }
 
