@@ -11,18 +11,18 @@ export class HarvesterManager extends Manager.Manager {
   readonly role = 'harvester';
   
   commandMinions(): void {
-		let bla: { [id: string]: number; } = {};
+		let needs: { [id: string]: number; } = {};
 		_.forEach(Memory.harvester.sources, function(s: SourceDefinition) {
-			bla[s.id] = s.miningPositions.length;
+			needs[s.id] = s.miningPositions.length;
 		});
     _.forEach(this.minions, function(minion: Creep) {
 			if(minion.memory.source) {
-				bla[minion.memory.source]--;
+				needs[minion.memory.source]--;
 			}
     });
     _.forEach(this.minions, function(minion: Creep) {
 			if(!minion.memory.source) {
-				_.forEach(bla, function(need: number, src: string): boolean {
+				_.forEach(needs, function(need: number, src: string): boolean {
 					if(need > 0) {
 						minion.memory.source = src;
 						return false;
