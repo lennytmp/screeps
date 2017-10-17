@@ -1,6 +1,5 @@
-// Profiler
-import * as Profiler from "./libs/Profiler";
 import {ErrorMapper} from "./libs/ErrorMapper";
+import * as prf from "./Profiler";
 
 import * as Mngr from "./Manager";
 
@@ -9,11 +8,10 @@ import * as Fmngr from "./FighterManager";
 import * as Umngr from "./UpgraderManager";
 import * as Bmngr from "./BuilderManager";
 
-global.Profiler = Profiler.init();
-
 export function loop() {
   try {
-    var managers: { [name: string]: Mngr.Manager; } = {
+    let profiler = new prf.Profiler();
+    let managers: { [name: string]: Mngr.Manager; } = {
       "harvester": new Hmngr.HarvesterManager(),
       "fighter": new Fmngr.FighterManager(),
       "upgrader": new Umngr.UpgraderManager(),
@@ -28,10 +26,12 @@ export function loop() {
             }
         });
     });
+    profiler.registerEvent("register living creeps");
 
     let spawner = Game.spawns['Spawn1'];
     // renew creeps by spawner
     renewCreeps(spawner);
+    profiler.registerEvent("renew spawner");
 
     // get orders
     let requests: Mngr.SpawnRequest[] = []; //TODO: this should be heap.
@@ -39,6 +39,7 @@ export function loop() {
         requests = requests.concat(
           manager.getSpawnOrders(spawner.energy, spawner.energyCapacity));
     });
+    profiler.registerEvent("orders generation");
 
     // try building top priority one
     if (requests.length > 0) {
@@ -51,12 +52,17 @@ export function loop() {
       Game.spawns['Spawn1'].spawnCreep(order.parts,
                                        order.role + (Math.random()));
     }
+    profiler.registerEvent("max order execution");
 
     // command minions
     _.forEach(managers, function(manager: Mngr.Manager) {
         manager.commandMinions();
     });
+    profiler.registerEvent("commanding minions");
 
+    if (profiler.getDuration() > 10) { 
+      console.log(profiler.getOutput());
+    }
   } catch(e) {
     console.log(`Error:\n${ErrorMapper.getMappedStack(e)}`);
   }
