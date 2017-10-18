@@ -9,13 +9,13 @@ export function run(creep: Creep): void {
     let targets = <ConstructionSite[]>creep.room.find(FIND_CONSTRUCTION_SITES);
     if (targets.length) {
       if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'}});
+          creep.moveTo(targets[0]);
       }
     }
   } else {
     var spawner = Game.spawns['Spawn1'];
     if (creep.withdraw(spawner, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(spawner, {visualizePathStyle: {stroke: '#ffaa00'}});
+      creep.moveTo(spawner);
     }
   }
 }
