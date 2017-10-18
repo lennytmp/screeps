@@ -8,6 +8,8 @@ import * as Fmngr from "./FighterManager";
 import * as Umngr from "./UpgraderManager";
 import * as Bmngr from "./BuilderManager";
 
+var profile = true;
+
 export function loop() {
   try {
     let profiler = new prf.Profiler();
@@ -60,7 +62,7 @@ export function loop() {
     });
     profiler.registerEvent("commanding minions");
 
-    if (profiler.getDuration() > 10) { 
+    if (profile && profiler.getDuration() > 10) { 
       console.log(profiler.getOutput());
     }
   } catch(e) {
