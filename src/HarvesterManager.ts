@@ -10,7 +10,7 @@ export interface SourceDefinition {
 export class HarvesterManager extends Manager.Manager {
 
   readonly role = 'harvester';
-  
+
   commandMinions(): void {
 		let needs: { [id: string]: number; } = {};
 		_.forEach(Memory.harvester.sources, function(s: SourceDefinition) {
@@ -51,7 +51,7 @@ export class HarvesterManager extends Manager.Manager {
       res.push({
         "priority": 0,
         "parts": [WORK, CARRY, MOVE],
-        "role": this.role 
+        "role": this.role
       });
     }
     return res;
@@ -82,5 +82,22 @@ export class HarvesterManager extends Manager.Manager {
 		});
 		return res;
 	}
+
+  static getMyConsumer(creep: Creep): Creep | Structure {
+    return creep.pos.findClosestByRange(
+      FIND_MY_STRUCTURES, {
+        filter: function(o: Structure): boolean {
+          if (o.structureType == STRUCTURE_EXTENSION) {
+            let ext = <StructureExtension>o;
+            return ext.energy < ext.energyCapacity;
+          }
+          if (o.structureType == STRUCTURE_SPAWN) {
+            let spawn = <StructureSpawn>o;
+            return spawn.energy < spawn.energyCapacity;
+          }
+          return false;
+        }
+    });
+  }
 
 }

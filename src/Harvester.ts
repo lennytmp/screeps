@@ -1,3 +1,5 @@
+import * as Hmngr from "./HarvesterManager";
+
 export function run(creep: Creep, src: string): void {
   if (creep.carry.energy! < creep.carryCapacity) {
     let source = <Source>Game.getObjectById(src);
@@ -5,8 +7,14 @@ export function run(creep: Creep, src: string): void {
       creep.moveTo(source, {reusePath:100});
     }
   } else {
-    if(creep.transfer(Game.spawns['Spawn1']!, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(Game.spawns['Spawn1']);
+    // TODO: consumer should be passed into run() instead.
+    let consumer = Hmngr.HarvesterManager.getMyConsumer(creep); 
+    if (consumer == null) {
+      return;
+    }
+    if (creep.transfer(consumer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+      creep.moveTo(consumer);
     }
   }
 }
+
