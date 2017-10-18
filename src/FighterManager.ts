@@ -22,5 +22,23 @@ export class FighterManager extends Manager.Manager {
     }
     return res;
   }
+
+  static isSafePos(pos: RoomPosition): boolean {
+    let resPositions = Game.rooms[pos.roomName].lookForAtArea(LOOK_STRUCTURES,
+                                                              pos.y - 3,
+                                                              pos.x - 3,
+                                                              pos.y + 3,
+                                                              pos.x + 3,
+                                                              true);
+    let result = true;
+    _.forEach(resPositions, function(resPos: LookAtResultWithPos) {
+      if (resPos.structure!.structureType == STRUCTURE_KEEPER_LAIR) {
+        result = false;
+        return false;
+      }
+      return true;
+    });
+    return result;
+  }
 }
 

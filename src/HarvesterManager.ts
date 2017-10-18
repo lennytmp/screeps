@@ -1,4 +1,5 @@
 import * as Manager from "./Manager";
+import * as Fmngr from "./FighterManager";
 import * as Harvester from "./Harvester";
 
 export interface SourceDefinition {
@@ -49,7 +50,7 @@ export class HarvesterManager extends Manager.Manager {
     if (this.minions.length < needed && currentEnergy > 0 && maxEnergy == 300) {
       res.push({
         "priority": 0,
-        "parts": [WORK, WORK, CARRY, MOVE],
+        "parts": [WORK, CARRY, MOVE],
         "role": this.role 
       });
     }
@@ -60,10 +61,13 @@ export class HarvesterManager extends Manager.Manager {
 		let res: SourceDefinition[] = [];
     let sources = <Source[]>room.find(FIND_SOURCES);
     _.forEach(sources, function(src: Source) {
+      if (!Fmngr.FighterManager.isSafePos(src.pos)) {
+        return true;
+      }
 			let p = src.pos;
 			let positions: [number, number][] = [];
 			let area = room.lookForAtArea(LOOK_TERRAIN, p.y-1, p.x-1, p.y+1, p.x+1, false);
-			_.forEach(area, function(tmp, y: any) {
+			_.forEach(area, function(tmp: LookAtResultMatrix, y: any) {
 				_.forEach(tmp, function(what: string, x: any) {
 					if(what == "plain") {
 						positions.push([x, y]);
@@ -74,7 +78,9 @@ export class HarvesterManager extends Manager.Manager {
 				"id": src.id,
 				"miningPositions": positions
 			});
+      return true;
 		});
 		return res;
 	}
+
 }

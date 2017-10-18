@@ -1,4 +1,5 @@
 import * as Manager from "./Manager";
+import * as Fmngr from "./FighterManager";
 import * as Builder from "./Builder";
 
 export class BuilderManager extends Manager.Manager {
@@ -12,8 +13,8 @@ export class BuilderManager extends Manager.Manager {
       _.forEach(Game.rooms, function(room: Room) {
           let sources = <Source[]>room.find(FIND_SOURCES);
           for (let j = 0; j < sources.length; j++) {
-            if (j == 2) {
-              continue; // danger here. TODO: dehardoce this
+            if (!Fmngr.FighterManager.isSafePos(sources[j].pos)) {
+              continue;
             }
             let path = room.findPath(spawner.pos, sources[j].pos, {
               ignoreCreeps: true
