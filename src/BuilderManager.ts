@@ -35,7 +35,7 @@ export class BuilderManager extends Manager.Manager {
     let res: Manager.SpawnRequest[] = [];
     if (this.minions.length < 5 && currentEnergy > 0 && maxEnergy == 300) {
       res.push({
-        "priority": 10,
+        "priority": 20,
         "parts": [WORK, CARRY, CARRY, MOVE],
         "role": this.role
       });
