@@ -1,8 +1,6 @@
 import * as Manager from "./Manager";
 import * as Fighter from "./Fighter";
-
-const ROOM_WIDTH = 50;
-const ROOM_HEIGHT = 50;
+import * as Utils from "./Utils";
 
 export class FighterManager extends Manager.Manager {
   
@@ -27,15 +25,12 @@ export class FighterManager extends Manager.Manager {
   }
 
   static isSafePos(pos: RoomPosition): boolean {
-    let minY = Math.max(0, pos.y - 3);
-    let minX = Math.max(0, pos.x - 3);
-    let maxX = Math.min(ROOM_WIDTH, pos.x + 3);
-    let maxY = Math.min(ROOM_HEIGHT, pos.y + 3);
+    let space = Utils.getArea(pos, 3);
     let resPositions = Game.rooms[pos.roomName].lookForAtArea(LOOK_STRUCTURES,
-                                                              minY,
-                                                              minX,
-                                                              maxY,
-                                                              maxX,
+                                                              space.minY,
+                                                              space.minX,
+                                                              space.maxY,
+                                                              space.maxX,
                                                               true);
     let result = true;
     _.forEach(resPositions, function(resPos: LookAtResultWithPos) {
