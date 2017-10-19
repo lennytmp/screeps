@@ -9,7 +9,7 @@ const ROOM_WIDTH = 50;
 const ROOM_HEIGHT = 50;
 
 export function getArea(pos: RoomPosition, dist: number): Rect {
-  return { 
+  return {
     minY: Math.max(0, pos.y - dist),
     minX: Math.max(0, pos.x - dist),
     maxX: Math.min(ROOM_WIDTH, pos.x + dist),

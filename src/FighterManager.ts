@@ -3,7 +3,7 @@ import * as Fighter from "./Fighter";
 import * as Utils from "./Utils";
 
 export class FighterManager extends Manager.Manager {
-  
+
   readonly role = 'fighter';
 
   commandMinions(): void {
@@ -13,12 +13,17 @@ export class FighterManager extends Manager.Manager {
   }
 
   getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
+    maxEnergy--; // not used
     let res: Manager.SpawnRequest[] = [];
-    if (this.minions.length < 1 && currentEnergy > 0 && maxEnergy == 300) {
+    let parts = this.getBodyParts([RANGED_ATTACK, MOVE, TOUGH], currentEnergy);
+    if (parts.length == 0) {
+      return res;
+    }
+    if (this.minions.length < 1) {
       res.push({
         "priority": 100,
-        "parts": [TOUGH, TOUGH, MOVE, MOVE, RANGED_ATTACK],
-        "role": this.role 
+        "parts": parts.reverse(), // for additional security
+        "role": this.role
       });
     }
     return res;

@@ -62,7 +62,7 @@ export function loop() {
     });
     profiler.registerEvent("commanding minions");
 
-    if (profile && profiler.getDuration() > 10) { 
+    if (profile && profiler.getDuration() > 10) {
       console.log(profiler.getOutput());
     }
   } catch(e) {

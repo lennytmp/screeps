@@ -8,7 +8,7 @@ export function run(creep: Creep, src: string): void {
     }
   } else {
     // TODO: consumer should be passed into run() instead.
-    let consumer = Hmngr.HarvesterManager.getMyConsumer(creep); 
+    let consumer = Hmngr.HarvesterManager.getMyConsumer(creep);
     if (consumer == null) {
       return;
     }

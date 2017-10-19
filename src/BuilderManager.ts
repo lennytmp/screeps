@@ -19,12 +19,14 @@ export class BuilderManager extends Manager.Manager {
           if (!room.memory.ext_planned) {
             room.memory.ext_planned =
                 BuilderManager.planExtensions(spawn, EXTENSIONS_AVAILABLE["2"]);
+            return true;
           }
           if (!room.memory.roads_planned) {
             BuilderManager.planRoadsFromSpawn(spawn);
             room.memory.roads_planned = true;
           }
         }
+        return true;
       });
     }
     _.forEach(this.minions, function(minion: Creep) {
@@ -39,12 +41,8 @@ export class BuilderManager extends Manager.Manager {
         this.minions.length >= 3) {
       return res;
     }
-    let parts: string[] = [WORK, CARRY, CARRY, MOVE, MOVE];
-    let cost = 0;
-    for (let i = 0; i < parts.length; i++) {
-      cost += BODYPART_COST[parts[i]];
-    }
-    if (currentEnergy < cost) {
+    let parts = this.getBodyParts([WORK, CARRY, MOVE], currentEnergy);
+    if (parts.length == 0) {
       return res;
     }
     res.push({

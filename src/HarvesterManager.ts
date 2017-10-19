@@ -36,6 +36,7 @@ export class HarvesterManager extends Manager.Manager {
   }
 
   getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
+    maxEnergy--; // not needed
 		if(!Memory.harvester) {
 			Memory.harvester = {};
 		}
@@ -47,10 +48,14 @@ export class HarvesterManager extends Manager.Manager {
 			needed += s.miningPositions.length;
 		});
     let res: Manager.SpawnRequest[] = [];
-    if (this.minions.length < needed && currentEnergy > 0 && maxEnergy == 300) {
+    let parts = this.getBodyParts([WORK, CARRY, MOVE], currentEnergy);
+    if (parts.length == 0) {
+      return res;
+    }
+    if (this.minions.length < needed) {
       res.push({
         "priority": 0,
-        "parts": [WORK, CARRY, MOVE],
+        "parts": parts,
         "role": this.role
       });
     }
