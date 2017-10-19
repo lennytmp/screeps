@@ -13,7 +13,7 @@ export class UpgraderManager extends Manager.Manager {
 
   getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
     let res: Manager.SpawnRequest[] = [];
-    if (this.minions.length < 2 && currentEnergy > 0 && maxEnergy == 300) {
+    if (this.minions.length < 1 && currentEnergy > 0 && maxEnergy == 300) {
       res.push({
         "priority": 10,
         "parts": [WORK, CARRY, CARRY, MOVE],

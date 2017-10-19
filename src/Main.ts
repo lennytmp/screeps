@@ -8,7 +8,7 @@ import * as Fmngr from "./FighterManager";
 import * as Umngr from "./UpgraderManager";
 import * as Bmngr from "./BuilderManager";
 
-var profile = true;
+var profile = false;
 
 export function loop() {
   try {
@@ -19,7 +19,6 @@ export function loop() {
       "upgrader": new Umngr.UpgraderManager(),
       "builder": new Bmngr.BuilderManager()
     };
-
     //register living creeps
     _.forEach(Game.creeps, function(creep: Creep) {
         _.forEach(managers, function(manager: Mngr.Manager) {

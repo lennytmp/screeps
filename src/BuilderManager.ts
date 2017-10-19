@@ -33,7 +33,7 @@ export class BuilderManager extends Manager.Manager {
 
   getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
     let res: Manager.SpawnRequest[] = [];
-    if (this.minions.length < 5 && currentEnergy > 0 && maxEnergy == 300) {
+    if (this.minions.length < 3 && currentEnergy > 0 && maxEnergy == 300) {
       res.push({
         "priority": 20,
         "parts": [WORK, CARRY, CARRY, MOVE],
