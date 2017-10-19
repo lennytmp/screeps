@@ -1,29 +1,30 @@
 import * as Manager from "./Manager";
 import * as Fmngr from "./FighterManager";
 import * as Builder from "./Builder";
+import * as Utils from "./Utils";
+
+const EXTENSIONS_AVAILABLE = {"2": 5};
+const NATURAL_WALL = "wall"
 
 export class BuilderManager extends Manager.Manager {
 
   readonly role = 'builder';
 
   commandMinions(): void {
-    var spawner = Game.spawns['Spawn1'];
+    var spawn = Game.spawns['Spawn1'];
     // Create construction sites if needed
-    if (!existConstruction()) {
+    if (!BuilderManager.existConstruction()) {
       _.forEach(Game.rooms, function(room: Room) {
-          let sources = <Source[]>room.find(FIND_SOURCES);
-          for (let j = 0; j < sources.length; j++) {
-            if (!Fmngr.FighterManager.isSafePos(sources[j].pos)) {
-              continue;
-            }
-            let path = room.findPath(spawner.pos, sources[j].pos, {
-              ignoreCreeps: true
-            });
-            for (let i = 0; i < path.length; i++) {
-              room.createConstructionSite(path[i].x, path[i].y, STRUCTURE_ROAD);
-            }
+        if (room.controller!.level == 2) {
+          if (!room.memory.ext_planned) {
+            room.memory.ext_planned =
+                BuilderManager.planExtensions(spawn, EXTENSIONS_AVAILABLE["2"]);
           }
-          return false; // only one room per tick
+          if (!room.memory.roads_planned) {
+            BuilderManager.planRoadsFromSpawn(spawn);
+            room.memory.roads_planned = true;
+          }
+        }
       });
     }
     _.forEach(this.minions, function(minion: Creep) {
@@ -32,22 +33,72 @@ export class BuilderManager extends Manager.Manager {
   }
 
   getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
+    maxEnergy--; // unused
     let res: Manager.SpawnRequest[] = [];
-    if (this.minions.length < 3 && currentEnergy > 0 && maxEnergy == 300) {
-      res.push({
-        "priority": 20,
-        "parts": [WORK, CARRY, CARRY, MOVE],
-        "role": this.role
-      });
+    if (!BuilderManager.existConstruction() ||
+        this.minions.length >= 3) {
+      return res;
     }
+    let parts: string[] = [WORK, CARRY, CARRY, MOVE, MOVE];
+    let cost = 0;
+    for (let i = 0; i < parts.length; i++) {
+      cost += BODYPART_COST[parts[i]];
+    }
+    if (currentEnergy < cost) {
+      return res;
+    }
+    res.push({
+      "priority": 20,
+      "parts": parts,
+      "role": this.role
+    });
     return res;
   }
-}
 
-function existConstruction() {
-  let targets = Game.constructionSites;
-  for (var key in targets) {
-    return true;
+  static planExtensions(spawn: StructureSpawn, num: number): boolean {
+    let space = Utils.getArea(spawn.pos, 3);
+    let resPositions = spawn.room.lookForAtArea(LOOK_TERRAIN,
+                                                space.minY,
+                                                space.minX,
+                                                space.maxY,
+                                                space.maxX,
+                                                true);
+    _.forEach(resPositions, function(resPos: LookAtResultWithPos) {
+        if (resPos.terrain == NATURAL_WALL) {
+          return true;
+        }
+        let pos = new RoomPosition(resPos.x, resPos.y, spawn.room.name);
+        console.log(pos, JSON.stringify(resPos));
+        if (!pos.inRangeTo(spawn, 1)) {
+          if (pos.createConstructionSite(STRUCTURE_EXTENSION) == OK) {
+            num--;
+          }
+        }
+        return num > 0;
+    });
+    return num > 0;
   }
-  return false;
+
+  static planRoadsFromSpawn(spawn: StructureSpawn): void {
+    let sources = <Source[]>spawn.room.find(FIND_SOURCES);
+    for (let j = 0; j < sources.length; j++) {
+      if (!Fmngr.FighterManager.isSafePos(sources[j].pos)) {
+        continue;
+      }
+      let path = spawn.room.findPath(spawn.pos, sources[j].pos, {
+        ignoreCreeps: true
+      });
+      for (let i = 0; i < path.length; i++) {
+        spawn.room.createConstructionSite(path[i].x, path[i].y, STRUCTURE_ROAD);
+      }
+    }
+  }
+
+  static existConstruction(): boolean {
+    let targets = Game.constructionSites;
+    for (var key in targets) {
+      return true;
+    }
+    return false;
+  }
 }
