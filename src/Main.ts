@@ -38,7 +38,8 @@ export function loop() {
     let requests: Mngr.SpawnRequest[] = []; //TODO: this should be heap.
     _.forEach(managers, function(manager: Mngr.Manager) {
         requests = requests.concat(
-          manager.getSpawnOrders(spawner.energy, spawner.energyCapacity));
+          manager.getSpawnOrders(spawner.room.energyAvailable,
+                                 spawner.room.energyCapacityAvailable));
     });
     profiler.registerEvent("orders generation");
 
