@@ -66,7 +66,6 @@ export class BuilderManager extends Manager.Manager {
           return true;
         }
         let pos = new RoomPosition(resPos.x, resPos.y, spawn.room.name);
-        console.log(pos, JSON.stringify(resPos));
         if (!pos.inRangeTo(spawn, 1)) {
           if (pos.createConstructionSite(STRUCTURE_EXTENSION) == OK) {
             num--;
@@ -74,7 +73,7 @@ export class BuilderManager extends Manager.Manager {
         }
         return num > 0;
     });
-    return num > 0;
+    return num == 0;
   }
 
   static planRoadsFromSpawn(spawn: StructureSpawn): void {
