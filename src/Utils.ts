@@ -35,3 +35,12 @@ export function isNearStructure(pos: RoomPosition,
   }
   return false;
 }
+
+export function getBodyArray(bodyStruct: BodyPartDefinition[]): string[] {
+  let result: string[] = [];
+  for (let i in bodyStruct) {
+    result.push(bodyStruct[i].type);
+  }
+  return result;
+}
+

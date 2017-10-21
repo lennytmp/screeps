@@ -9,13 +9,16 @@ export type SpawnRequest = {
 
 export type RenewRequest = {
   priority: number,
-  creep: Creep
+  creep: Creep,
+  price: number
 }
 
 export type BodyDesign = {
   body: string[],
   price: number
 }
+
+const RENEW_COEF = 2.5;
 
 export type SpawnerQueueElement = SpawnRequest | RenewRequest;
 
@@ -42,13 +45,17 @@ export abstract class Manager {
     _.forEach(this.minions, function(minion: Creep) {
       if (minion.ticksToLive < 1000 &&
           Utils.isNearStructure(minion.pos, STRUCTURE_SPAWN, 1)) {
-        requests.push(<RenewRequest>{"priority": priority, "creep": minion});
+        requests.push(<RenewRequest>{
+          "priority": priority,
+          "creep": minion,
+          "price": Manager.getPrice(Utils.getBodyArray(minion.body)) / minion.body.length / RENEW_COEF
+        });
       }
     });
     return requests;
   }
 
-  static getMinPrice(bodyParts: string[]) {
+  static getPrice(bodyParts: string[]) {
     let price = 0;
     for (let i = 0; i < bodyParts.length; i++) {
       price += BODYPART_COST[bodyParts[i]];

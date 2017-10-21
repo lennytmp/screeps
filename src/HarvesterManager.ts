@@ -48,7 +48,7 @@ export class HarvesterManager extends Mngr.Manager {
         "priority": 0,
         "parts": minBodyParts,
         "role": this.role,
-        "price": HarvesterManager.getMinPrice(minBodyParts)
+        "price": HarvesterManager.getPrice(minBodyParts)
       });
       return res;
     }
