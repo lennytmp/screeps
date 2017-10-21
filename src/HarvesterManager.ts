@@ -71,7 +71,7 @@ export class HarvesterManager extends Mngr.Manager {
         priority = 1; // updating existing ones is still more important
       }
     });
-    if (this.minions.length > needed) {
+    if (this.minions.length >= needed) {
       return res;
     }
     let parts = HarvesterManager.getBodyParts(minBodyParts, maxEnergy);
