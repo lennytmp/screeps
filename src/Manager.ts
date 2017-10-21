@@ -1,7 +1,12 @@
-export interface SpawnRequest {
+export type SpawnRequest = {
   priority: number,
   parts: string[],
   role: string
+}
+
+export type RenewRequest = {
+  priority: number,
+  creep: Creep
 }
 
 export abstract class Manager {

@@ -10,6 +10,12 @@ import * as Bmngr from "./BuilderManager";
 
 var profile = false;
 
+type SpawnerQueueElement = Mngr.SpawnRequest | Mngr.RenewRequest;
+
+function isSpawnRequest(request: SpawnerQueueElement): request is Mngr.SpawnRequest {
+  return (<Mngr.SpawnRequest>request).parts !== undefined;
+}
+
 export function loop() {
   try {
     let profiler = new prf.Profiler();
@@ -35,7 +41,7 @@ export function loop() {
     profiler.registerEvent("renew spawner");
 
     // get orders
-    let requests: Mngr.SpawnRequest[] = []; //TODO: this should be heap.
+    let requests: SpawnerQueueElement[] = []; //TODO: this should be heap.
     _.forEach(managers, function(manager: Mngr.Manager) {
         requests = requests.concat(
           manager.getSpawnOrders(spawner.room.energyAvailable,
@@ -45,14 +51,18 @@ export function loop() {
 
     // try building top priority one
     if (requests.length > 0) {
-      let order: Mngr.SpawnRequest = requests[0];
-      _.forEach(requests, function(request: Mngr.SpawnRequest) {
+      let order: SpawnerQueueElement = requests[0];
+      _.forEach(requests, function(request: SpawnerQueueElement) {
           if (request.priority < order.priority) {
             order = request;
           }
       });
-      Game.spawns['Spawn1'].spawnCreep(order.parts,
-                                       order.role + (Math.random()));
+      if (isSpawnRequest(order)) {
+        Game.spawns['Spawn1'].spawnCreep(order.parts,
+                                         order.role + (Math.random()));
+      } else {
+        spawner.renewCreep(order.creep);
+      }
     }
     profiler.registerEvent("max order execution");
 
