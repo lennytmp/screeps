@@ -68,11 +68,10 @@ export class HarvesterManager extends Mngr.Manager {
     _.forEach(Memory.harvester.sources, function(s: SourceDefinition) {
       needed += s.miningPositions.length;
       if(!s.unsafe) {
-        priority = 0;
+        priority = 1; // updating existing ones is still more important
       }
     });
-
-    if (this.minions.length < needed) {
+    if (this.minions.length > needed) {
       return res;
     }
     let parts = HarvesterManager.getBodyParts(minBodyParts, maxEnergy);
