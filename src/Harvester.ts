@@ -4,7 +4,7 @@ export function run(creep: Creep, src: string): void {
   if (creep.carry.energy! < creep.carryCapacity) {
     let source = <Source>Game.getObjectById(src);
     if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(source, {reusePath:100});
+      creep.moveTo(source);
     }
   } else {
     // TODO: consumer should be passed into run() instead.
