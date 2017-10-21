@@ -1,4 +1,4 @@
-import * as Manager from "./Manager";
+import * as Mngr from "./Manager";
 import * as Fmngr from "./FighterManager";
 import * as Builder from "./Builder";
 import * as Utils from "./Utils";
@@ -6,7 +6,7 @@ import * as Utils from "./Utils";
 const EXTENSIONS_AVAILABLE = {"2": 5};
 const NATURAL_WALL = "wall"
 
-export class BuilderManager extends Manager.Manager {
+export class BuilderManager extends Mngr.Manager {
 
   readonly role = 'builder';
 
@@ -34,8 +34,8 @@ export class BuilderManager extends Manager.Manager {
     });
   }
 
-  getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
-    let res: Manager.SpawnRequest[] = [];
+  getSpawnOrders(currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    let res: Mngr.SpawnerQueueElement[] = [];
 
     let minBodyParts = [WORK, CARRY, MOVE];
     if (maxEnergy - currentEnergy > BuilderManager.getMinPrice(minBodyParts)) {
@@ -55,6 +55,7 @@ export class BuilderManager extends Manager.Manager {
       "parts": parts,
       "role": this.role
     });
+    res = res.concat(this.getRenewRequests(20));
     return res;
   }
 

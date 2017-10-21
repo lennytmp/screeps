@@ -1,7 +1,7 @@
-import * as Manager from "./Manager";
+import * as Mngr from "./Manager";
 import * as Upgrader from "./Upgrader";
 
-export class UpgraderManager extends Manager.Manager {
+export class UpgraderManager extends Mngr.Manager {
 
   readonly role = "upgrader";
 
@@ -11,8 +11,8 @@ export class UpgraderManager extends Manager.Manager {
     });
   }
 
-  getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
-    let res: Manager.SpawnRequest[] = [];
+  getSpawnOrders(currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    let res: Mngr.SpawnerQueueElement[] = [];
 
     let minBodyParts = [WORK, CARRY, MOVE];
     if (maxEnergy - currentEnergy > UpgraderManager.getMinPrice(minBodyParts)) {
@@ -30,6 +30,7 @@ export class UpgraderManager extends Manager.Manager {
         "role": this.role
       });
     }
+    res = res.concat(this.getRenewRequests(10));
     return res;
   }
 }

@@ -1,4 +1,4 @@
-import * as Manager from "./Manager";
+import * as Mngr from "./Manager";
 import * as Fmngr from "./FighterManager";
 import * as Harvester from "./Harvester";
 
@@ -9,7 +9,7 @@ export interface SourceDefinition {
   distance: number
 }
 
-export class HarvesterManager extends Manager.Manager {
+export class HarvesterManager extends Mngr.Manager {
 
   readonly role = 'harvester';
 
@@ -37,8 +37,8 @@ export class HarvesterManager extends Manager.Manager {
     });
   }
 
-  getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
-    let res: Manager.SpawnRequest[] = [];
+  getSpawnOrders(currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    let res: Mngr.SpawnerQueueElement[] = [];
 
     let minBodyParts = [WORK, CARRY, MOVE];
     if (maxEnergy - currentEnergy > HarvesterManager.getMinPrice(minBodyParts)) {
@@ -72,6 +72,7 @@ export class HarvesterManager extends Manager.Manager {
         "role": this.role
       });
     }
+    res = res.concat(this.getRenewRequests(0));
     return res;
   }
 

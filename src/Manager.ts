@@ -11,6 +11,12 @@ export type RenewRequest = {
   creep: Creep
 }
 
+export type SpawnerQueueElement = SpawnRequest | RenewRequest;
+
+export function isSpawnRequest(request: SpawnerQueueElement): request is SpawnRequest {
+  return (<SpawnRequest>request).parts !== undefined;
+}
+
 export abstract class Manager {
 
   minions: Creep[] = [];
@@ -21,15 +27,16 @@ export abstract class Manager {
     this.minions.push(creep);
   }
 
-  abstract getSpawnOrders(currentEnergy: number, maxEnergy: number): SpawnRequest[];
+  abstract getSpawnOrders(currentEnergy: number, maxEnergy: number): SpawnerQueueElement[];
 
   abstract commandMinions(): void;
 
-  getRenewRequests(): RenewRequest[] {
+  getRenewRequests(priority: number): RenewRequest[] {
     let requests: RenewRequest[] = [];
     _.forEach(this.minions, function(minion: Creep) {
-      if (Utils.isNearStructure(minion.pos, STRUCTURE_SPAWN, 1)) {
-        requests.push(<RenewRequest>{"creep": minion});
+      if (minion.ticksToLive < 1000 &&
+          Utils.isNearStructure(minion.pos, STRUCTURE_SPAWN, 1)) {
+        requests.push(<RenewRequest>{"priority": priority, "creep": minion});
       }
     });
     return requests;

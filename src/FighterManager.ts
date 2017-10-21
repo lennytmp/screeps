@@ -1,8 +1,8 @@
-import * as Manager from "./Manager";
+import * as Mngr from "./Manager";
 import * as Fighter from "./Fighter";
 import * as Utils from "./Utils";
 
-export class FighterManager extends Manager.Manager {
+export class FighterManager extends Mngr.Manager {
 
   readonly role = 'fighter';
 
@@ -12,8 +12,8 @@ export class FighterManager extends Manager.Manager {
     });
   }
 
-  getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
-    let res: Manager.SpawnRequest[] = [];
+  getSpawnOrders(currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    let res: Mngr.SpawnerQueueElement[] = [];
 
     let minBodyParts = [RANGED_ATTACK, MOVE, TOUGH];
     if (maxEnergy - currentEnergy > FighterManager.getMinPrice(minBodyParts)) {
@@ -31,6 +31,7 @@ export class FighterManager extends Manager.Manager {
         "role": this.role
       });
     }
+    res = res.concat(this.getRenewRequests(100));
     return res;
   }
 
