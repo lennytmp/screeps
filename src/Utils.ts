@@ -24,8 +24,8 @@ export function isNearStructure(pos: RoomPosition,
   let resPositions = Game.rooms[pos.roomName].lookForAtArea(LOOK_STRUCTURES,
                                                             area.minY,
                                                             area.minX,
-                                                            area.maxX,
                                                             area.maxY,
+                                                            area.maxX,
                                                             true);
   for (let i in resPositions) {
     let resPos = <LookAtResultWithPos>resPositions[i];
