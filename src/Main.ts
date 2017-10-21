@@ -52,7 +52,7 @@ export function loop() {
       console.log(JSON.stringify(order));
       if (Mngr.isSpawnRequest(order)) {
         Game.spawns['Spawn1'].spawnCreep(order.parts,
-                                         order.role + (Math.random()));
+                                         order.role + (""+Math.random()).substring(2));
       } else {
         spawner.renewCreep(order.creep);
       }
