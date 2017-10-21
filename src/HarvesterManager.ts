@@ -41,7 +41,7 @@ export class HarvesterManager extends Manager.Manager {
     let res: Manager.SpawnRequest[] = [];
 
     let minBodyParts = [WORK, CARRY, MOVE];
-    if (maxEnergy - currentEnergy > this.getMinPrice(minBodyParts)) {
+    if (maxEnergy - currentEnergy > HarvesterManager.getMinPrice(minBodyParts)) {
       return res;
     }
 
@@ -61,7 +61,7 @@ export class HarvesterManager extends Manager.Manager {
       }
     });
 
-    let parts = this.getBodyParts(minBodyParts, currentEnergy);
+    let parts = HarvesterManager.getBodyParts(minBodyParts, currentEnergy);
     if (parts.length == 0) {
       return res;
     }

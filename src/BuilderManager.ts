@@ -38,7 +38,7 @@ export class BuilderManager extends Manager.Manager {
     let res: Manager.SpawnRequest[] = [];
 
     let minBodyParts = [WORK, CARRY, MOVE];
-    if (maxEnergy - currentEnergy > this.getMinPrice(minBodyParts)) {
+    if (maxEnergy - currentEnergy > BuilderManager.getMinPrice(minBodyParts)) {
       return res;
     }
 
@@ -46,7 +46,7 @@ export class BuilderManager extends Manager.Manager {
         this.minions.length >= 3) {
       return res;
     }
-    let parts = this.getBodyParts(minBodyParts, currentEnergy);
+    let parts = BuilderManager.getBodyParts(minBodyParts, currentEnergy);
     if (parts.length == 0) {
       return res;
     }

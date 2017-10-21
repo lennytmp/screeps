@@ -16,11 +16,11 @@ export class FighterManager extends Manager.Manager {
     let res: Manager.SpawnRequest[] = [];
 
     let minBodyParts = [RANGED_ATTACK, MOVE, TOUGH];
-    if (maxEnergy - currentEnergy > this.getMinPrice(minBodyParts)) {
+    if (maxEnergy - currentEnergy > FighterManager.getMinPrice(minBodyParts)) {
       return res;
     }
 
-    let parts = this.getBodyParts(minBodyParts, currentEnergy);
+    let parts = FighterManager.getBodyParts(minBodyParts, currentEnergy);
     if (parts.length == 0) {
       return res;
     }
@@ -38,22 +38,7 @@ export class FighterManager extends Manager.Manager {
     if (pos.findInRange(FIND_HOSTILE_CREEPS, 3).length > 0) {
       return false;
     }
-    let space = Utils.getArea(pos, 3);
-    let resPositions = Game.rooms[pos.roomName].lookForAtArea(LOOK_STRUCTURES,
-                                                              space.minY,
-                                                              space.minX,
-                                                              space.maxY,
-                                                              space.maxX,
-                                                              true);
-    let result = true;
-    _.forEach(resPositions, function(resPos: LookAtResultWithPos) {
-      if (resPos.structure!.structureType == STRUCTURE_KEEPER_LAIR) {
-        result = false;
-        return false;
-      }
-      return true;
-    });
-    return result;
+    return !Utils.isNearStructure(pos, STRUCTURE_KEEPER_LAIR, 3);
   }
 }
 

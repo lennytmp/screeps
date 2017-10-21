@@ -1,3 +1,5 @@
+import * as Utils from "./Utils";
+
 export type SpawnRequest = {
   priority: number,
   parts: string[],
@@ -23,7 +25,17 @@ export abstract class Manager {
 
   abstract commandMinions(): void;
 
-  getMinPrice(bodyParts: string[]) {
+  getRenewRequests(): RenewRequest[] {
+    let requests: RenewRequest[] = [];
+    _.forEach(this.minions, function(minion: Creep) {
+      if (Utils.isNearStructure(minion.pos, STRUCTURE_SPAWN, 1)) {
+        requests.push(<RenewRequest>{"creep": minion});
+      }
+    });
+    return requests;
+  }
+
+  static getMinPrice(bodyParts: string[]) {
     let price = 0;
     for (let i = 0; i < bodyParts.length; i++) {
       price += BODYPART_COST[bodyParts[i]];
@@ -31,7 +43,7 @@ export abstract class Manager {
     return price;
   }
 
-  getBodyParts(priorities: string[], energy: number): string[] {
+  static getBodyParts(priorities: string[], energy: number): string[] {
     let parts: string[] = [];
     let curEnergy = energy;
     let firstTake = true; // all parts in priorities should be there once.

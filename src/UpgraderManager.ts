@@ -15,11 +15,11 @@ export class UpgraderManager extends Manager.Manager {
     let res: Manager.SpawnRequest[] = [];
 
     let minBodyParts = [WORK, CARRY, MOVE];
-    if (maxEnergy - currentEnergy > this.getMinPrice(minBodyParts)) {
+    if (maxEnergy - currentEnergy > UpgraderManager.getMinPrice(minBodyParts)) {
       return res;
     }
 
-    let parts = this.getBodyParts(minBodyParts, currentEnergy);
+    let parts = UpgraderManager.getBodyParts(minBodyParts, currentEnergy);
     if (parts.length == 0) {
       return res;
     }

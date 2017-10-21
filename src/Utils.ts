@@ -16,3 +16,22 @@ export function getArea(pos: RoomPosition, dist: number): Rect {
     maxY: Math.min(ROOM_HEIGHT, pos.y + dist)
   }
 }
+
+export function isNearStructure(pos: RoomPosition,
+                                structureType: string,
+                                distance: number): boolean {
+  let area = getArea(pos, distance);
+  let resPositions = Game.rooms[pos.roomName].lookForAtArea(LOOK_STRUCTURES,
+                                                            area.minY,
+                                                            area.minX,
+                                                            area.maxX,
+                                                            area.maxY,
+                                                            true);
+  for (let i in resPositions) {
+    let resPos = <LookAtResultWithPos>resPositions[i];
+    if (resPos.structure!.structureType == structureType) {
+      return true;
+    }
+  }
+  return false;
+}
