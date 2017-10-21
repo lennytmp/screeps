@@ -152,6 +152,9 @@ export class HarvesterManager extends Mngr.Manager {
       console.log(src.id +": "+ JSON.stringify(res));
       if(res) {
         src.extensionPositions = res;
+        _.forEach(res, function(pos: [number, number]) {
+          room.createConstructionSite(pos[0], pos[1], STRUCTURE_EXTENSION);
+        });
       }
     });
   }
