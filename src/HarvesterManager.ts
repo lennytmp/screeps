@@ -4,7 +4,9 @@ import * as Harvester from "./Harvester";
 
 export interface SourceDefinition {
   id: string,
-  miningPositions: [number, number][]
+  miningPositions: [number, number][],
+  unsafe: boolean,
+  distance: number
 }
 
 export class HarvesterManager extends Manager.Manager {
@@ -49,9 +51,14 @@ export class HarvesterManager extends Manager.Manager {
     if(!Memory.harvester.sources) {
       Memory.harvester.sources = this.calcSources(Game.spawns['Spawn1'].room);
     }
+    // Create harvesters at p200 if there's only unsafe sources, otherwise as p0.
+    let priority = 200;
     let needed = 0;
     _.forEach(Memory.harvester.sources, function(s: SourceDefinition) {
       needed += s.miningPositions.length;
+      if(!s.unsafe) {
+        priority = 0;
+      }
     });
 
     let parts = this.getBodyParts(minBodyParts, currentEnergy);
@@ -60,7 +67,7 @@ export class HarvesterManager extends Manager.Manager {
     }
     if (this.minions.length < needed) {
       res.push({
-        "priority": 0,
+        "priority": priority,
         "parts": parts,
         "role": this.role
       });
@@ -72,9 +79,6 @@ export class HarvesterManager extends Manager.Manager {
     let res: SourceDefinition[] = [];
     let sources = <Source[]>room.find(FIND_SOURCES);
     _.forEach(sources, function(src: Source) {
-      if (!Fmngr.FighterManager.isSafePos(src.pos)) {
-        return true;
-      }
       let p = src.pos;
       let positions: [number, number][] = [];
       let area = room.lookForAtArea(LOOK_TERRAIN, p.y-1, p.x-1, p.y+1, p.x+1, false);
@@ -85,13 +89,20 @@ export class HarvesterManager extends Manager.Manager {
           }
         });
       });
+      unsafe = !Fmngr.FighterManager.isSafePos(src.pos)
+      let distances: number[] = [];
+      _.forEach(Game.spawns, function(spawn: StructureSpawn) {
+        distances.push(src.pos.findPathTo(spawn).length);
+      })
       res.push({
         "id": src.id,
-        "miningPositions": positions
+        "miningPositions": positions,
+        "unsafe": unsafe,
+        "distance": _.min(distances)
       });
       return true;
     });
-    return res;
+    return _.sortBy(res, ['unsafe', 'distance']);
   }
 
   static getMyConsumer(creep: Creep): Creep | Structure {

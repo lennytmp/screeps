@@ -35,6 +35,9 @@ export class FighterManager extends Manager.Manager {
   }
 
   static isSafePos(pos: RoomPosition): boolean {
+    if (pos.findInRange(FIND_HOSTILE_CREEPS, 3).length > 0) {
+      return false;
+    }
     let space = Utils.getArea(pos, 3);
     let resPositions = Game.rooms[pos.roomName].lookForAtArea(LOOK_STRUCTURES,
                                                               space.minY,
