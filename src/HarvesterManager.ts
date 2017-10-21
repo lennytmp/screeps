@@ -29,6 +29,7 @@ export class HarvesterManager extends Mngr.Manager {
         _.forEach(needs, function(need: number, src: string): boolean {
           if(need > 0) {
             minion.memory.source = src;
+            needs[minion.memory.src]--;
             return false;
           }
           return true;
@@ -73,6 +74,7 @@ export class HarvesterManager extends Mngr.Manager {
       }
     });
     if (this.minions.length >= needed) {
+      Memory.targetRCL = 2;
       return res;
     }
     let design = HarvesterManager.getBodyParts(minBodyParts, maxEnergy);
