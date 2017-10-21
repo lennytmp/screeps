@@ -36,7 +36,13 @@ export class HarvesterManager extends Manager.Manager {
   }
 
   getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
-    maxEnergy--; // not needed
+    let res: Manager.SpawnRequest[] = [];
+
+    let minBodyParts = [WORK, CARRY, MOVE];
+    if (maxEnergy - currentEnergy > this.getMinPrice(minBodyParts)) {
+      return res;
+    }
+
 		if(!Memory.harvester) {
 			Memory.harvester = {};
 		}
@@ -47,8 +53,8 @@ export class HarvesterManager extends Manager.Manager {
 		_.forEach(Memory.harvester.sources, function(s: SourceDefinition) {
 			needed += s.miningPositions.length;
 		});
-    let res: Manager.SpawnRequest[] = [];
-    let parts = this.getBodyParts([WORK, CARRY, MOVE], currentEnergy);
+
+    let parts = this.getBodyParts(minBodyParts, currentEnergy);
     if (parts.length == 0) {
       return res;
     }

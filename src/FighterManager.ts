@@ -13,9 +13,14 @@ export class FighterManager extends Manager.Manager {
   }
 
   getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
-    maxEnergy--; // not used
     let res: Manager.SpawnRequest[] = [];
-    let parts = this.getBodyParts([RANGED_ATTACK, MOVE, TOUGH], currentEnergy);
+
+    let minBodyParts = [RANGED_ATTACK, MOVE, TOUGH];
+    if (maxEnergy - currentEnergy > this.getMinPrice(minBodyParts)) {
+      return res;
+    }
+
+    let parts = this.getBodyParts(minBodyParts, currentEnergy);
     if (parts.length == 0) {
       return res;
     }

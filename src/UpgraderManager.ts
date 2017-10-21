@@ -12,9 +12,14 @@ export class UpgraderManager extends Manager.Manager {
   }
 
   getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
-    maxEnergy--; // not used
     let res: Manager.SpawnRequest[] = [];
-    let parts = this.getBodyParts([WORK, CARRY, MOVE], currentEnergy);
+
+    let minBodyParts = [WORK, CARRY, MOVE];
+    if (maxEnergy - currentEnergy > this.getMinPrice(minBodyParts)) {
+      return res;
+    }
+
+    let parts = this.getBodyParts(minBodyParts, currentEnergy);
     if (parts.length == 0) {
       return res;
     }

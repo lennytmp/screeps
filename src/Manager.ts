@@ -18,6 +18,14 @@ export abstract class Manager {
 
   abstract commandMinions(): void;
 
+  getMinPrice(bodyParts: string[]) {
+    let price = 0;
+    for (let i = 0; i < bodyParts.length; i++) {
+      price += BODYPART_COST[bodyParts[i]];
+    }
+    return price;
+  }
+
   getBodyParts(priorities: string[], energy: number): string[] {
     let parts: string[] = [];
     let curEnergy = energy;

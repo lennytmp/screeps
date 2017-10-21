@@ -35,13 +35,18 @@ export class BuilderManager extends Manager.Manager {
   }
 
   getSpawnOrders(currentEnergy: number, maxEnergy: number): Manager.SpawnRequest[] {
-    maxEnergy--; // unused
     let res: Manager.SpawnRequest[] = [];
+
+    let minBodyParts = [WORK, CARRY, MOVE];
+    if (maxEnergy - currentEnergy > this.getMinPrice(minBodyParts)) {
+      return res;
+    }
+
     if (!BuilderManager.existConstruction() ||
         this.minions.length >= 3) {
       return res;
     }
-    let parts = this.getBodyParts([WORK, CARRY, MOVE], currentEnergy);
+    let parts = this.getBodyParts(minBodyParts, currentEnergy);
     if (parts.length == 0) {
       return res;
     }
