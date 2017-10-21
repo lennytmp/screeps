@@ -36,4 +36,3 @@ export class FighterManager extends Mngr.Manager {
     return !Utils.isNearStructure(pos, STRUCTURE_KEEPER_LAIR, 3);
   }
 }
-

@@ -12,8 +12,8 @@ export function getArea(pos: RoomPosition, dist: number): Rect {
   return {
     minY: Math.max(0, pos.y - dist),
     minX: Math.max(0, pos.x - dist),
-    maxX: Math.min(ROOM_WIDTH, pos.x + dist),
-    maxY: Math.min(ROOM_HEIGHT, pos.y + dist)
+    maxX: Math.min(ROOM_WIDTH-1, pos.x + dist),
+    maxY: Math.min(ROOM_HEIGHT-1, pos.y + dist)
   }
 }
 
