@@ -12,21 +12,14 @@ export class FighterManager extends Mngr.Manager {
     });
   }
 
-  getSpawnOrders(currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
-    let res: Mngr.SpawnerQueueElement[] = [];
-
+  getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    let priority = 100;
+    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(priority);
     let minBodyParts = [RANGED_ATTACK, MOVE, TOUGH];
-    if (maxEnergy - currentEnergy > FighterManager.getMinPrice(minBodyParts)) {
-      return res;
-    }
-
-    let parts = FighterManager.getBodyParts(minBodyParts, currentEnergy);
-    if (parts.length == 0) {
-      return res;
-    }
+    let parts = FighterManager.getBodyParts(minBodyParts, maxEnergy);
     if (this.minions.length < 1) {
       res.push({
-        "priority": 100,
+        "priority": priority,
         "parts": parts.reverse(), // for additional security
         "role": this.role
       });

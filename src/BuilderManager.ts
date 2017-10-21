@@ -34,28 +34,20 @@ export class BuilderManager extends Mngr.Manager {
     });
   }
 
-  getSpawnOrders(currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
-    let res: Mngr.SpawnerQueueElement[] = [];
-
+  getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    let priority = 20;
+    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(priority);
     let minBodyParts = [WORK, CARRY, MOVE];
-    if (maxEnergy - currentEnergy > BuilderManager.getMinPrice(minBodyParts)) {
-      return res;
-    }
-
     if (!BuilderManager.existConstruction() ||
         this.minions.length >= 3) {
       return res;
     }
-    let parts = BuilderManager.getBodyParts(minBodyParts, currentEnergy);
-    if (parts.length == 0) {
-      return res;
-    }
+    let parts = BuilderManager.getBodyParts(minBodyParts, maxEnergy);
     res.push({
-      "priority": 20,
+      "priority": priority,
       "parts": parts,
       "role": this.role
     });
-    res = res.concat(this.getRenewRequests(20));
     return res;
   }
 

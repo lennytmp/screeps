@@ -37,11 +37,15 @@ export class HarvesterManager extends Mngr.Manager {
     });
   }
 
-  getSpawnOrders(currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
-    let res: Mngr.SpawnerQueueElement[] = [];
-
+  getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(0);
     let minBodyParts = [WORK, CARRY, MOVE];
-    if (maxEnergy - currentEnergy > HarvesterManager.getMinPrice(minBodyParts)) {
+    if (this.minions.length == 0) {
+      res.push({
+        "priority": 0,
+        "parts": minBodyParts,
+        "role": this.role
+      });
       return res;
     }
 
@@ -61,18 +65,15 @@ export class HarvesterManager extends Mngr.Manager {
       }
     });
 
-    let parts = HarvesterManager.getBodyParts(minBodyParts, currentEnergy);
-    if (parts.length == 0) {
+    if (this.minions.length < needed) {
       return res;
     }
-    if (this.minions.length < needed) {
-      res.push({
-        "priority": priority,
-        "parts": parts,
-        "role": this.role
-      });
-    }
-    res = res.concat(this.getRenewRequests(0));
+    let parts = HarvesterManager.getBodyParts(minBodyParts, maxEnergy);
+    res.push({
+      "priority": priority,
+      "parts": parts,
+      "role": this.role
+    });
     return res;
   }
 

@@ -11,21 +11,14 @@ export class UpgraderManager extends Mngr.Manager {
     });
   }
 
-  getSpawnOrders(currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
-    let res: Mngr.SpawnerQueueElement[] = [];
-
+  getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    let priority = 10;
+    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(priority);
     let minBodyParts = [WORK, CARRY, MOVE];
-    if (maxEnergy - currentEnergy > UpgraderManager.getMinPrice(minBodyParts)) {
-      return res;
-    }
-
-    let parts = UpgraderManager.getBodyParts(minBodyParts, currentEnergy);
-    if (parts.length == 0) {
-      return res;
-    }
+    let parts = UpgraderManager.getBodyParts(minBodyParts, maxEnergy);
     if (this.minions.length < 1) {
       res.push({
-        "priority": 10,
+        "priority": priority,
         "parts": parts,
         "role": this.role
       });
