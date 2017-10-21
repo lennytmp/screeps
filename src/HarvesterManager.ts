@@ -29,6 +29,7 @@ export class HarvesterManager extends Mngr.Manager {
         _.forEach(needs, function(need: number, src: string): boolean {
           if(need > 0) {
             minion.memory.source = src;
+            needs[minion.memory.src]--;
             return false;
           }
           return true;
