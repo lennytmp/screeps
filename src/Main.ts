@@ -3,10 +3,11 @@ import * as prf from "./Profiler";
 
 import * as Mngr from "./Manager";
 
-import * as Hmngr from "./HarvesterManager";
-import * as Fmngr from "./FighterManager";
-import * as Umngr from "./UpgraderManager";
 import * as Bmngr from "./BuilderManager";
+import * as Ed from "./EnergyDistributor";
+import * as Fmngr from "./FighterManager";
+import * as Hmngr from "./HarvesterManager";
+import * as Umngr from "./UpgraderManager";
 
 var profile = false;
 
@@ -40,7 +41,7 @@ export function loop() {
     });
     profiler.registerEvent("orders generation");
 
-    // try building top priority one
+    // try building top one priority
     if (requests.length > 0) {
       let order: Mngr.SpawnerQueueElement = requests[0];
       _.forEach(requests, function(request: Mngr.SpawnerQueueElement) {
@@ -48,6 +49,7 @@ export function loop() {
             order = request;
           }
       });
+      console.log(JSON.stringify(order));
       if (Mngr.isSpawnRequest(order)) {
         Game.spawns['Spawn1'].spawnCreep(order.parts,
                                          order.role + (Math.random()));

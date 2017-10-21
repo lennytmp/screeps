@@ -47,7 +47,8 @@ export class HarvesterManager extends Mngr.Manager {
       res.push({
         "priority": 0,
         "parts": minBodyParts,
-        "role": this.role
+        "role": this.role,
+        "price": HarvesterManager.getMinPrice(minBodyParts)
       });
       return res;
     }
@@ -74,11 +75,12 @@ export class HarvesterManager extends Mngr.Manager {
     if (this.minions.length > needed) {
       return res;
     }
-    let parts = HarvesterManager.getBodyParts(minBodyParts, maxEnergy);
+    let design = HarvesterManager.getBodyParts(minBodyParts, maxEnergy);
     res.push({
       "priority": priority,
-      "parts": parts,
-      "role": this.role
+      "parts": design.body,
+      "role": this.role,
+      "price": design.price
     });
     return res;
   }

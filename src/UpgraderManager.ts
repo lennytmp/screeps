@@ -15,12 +15,13 @@ export class UpgraderManager extends Mngr.Manager {
     let priority = 10;
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(priority);
     let minBodyParts = [WORK, CARRY, MOVE];
-    let parts = UpgraderManager.getBodyParts(minBodyParts, maxEnergy);
+    let design = UpgraderManager.getBodyParts(minBodyParts, maxEnergy);
     if (this.minions.length < 1) {
       res.push({
         "priority": priority,
-        "parts": parts,
-        "role": this.role
+        "parts": design.body,
+        "role": this.role,
+        "price": design.price
       });
     }
     res = res.concat(this.getRenewRequests(10));

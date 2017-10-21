@@ -42,11 +42,12 @@ export class BuilderManager extends Mngr.Manager {
         this.minions.length >= 3) {
       return res;
     }
-    let parts = BuilderManager.getBodyParts(minBodyParts, maxEnergy);
+    let design = BuilderManager.getBodyParts(minBodyParts, maxEnergy);
     res.push({
       "priority": priority,
-      "parts": parts,
-      "role": this.role
+      "parts": design.body,
+      "role": this.role,
+      "price": design.price
     });
     return res;
   }

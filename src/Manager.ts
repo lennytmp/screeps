@@ -3,12 +3,18 @@ import * as Utils from "./Utils";
 export type SpawnRequest = {
   priority: number,
   parts: string[],
-  role: string
+  role: string,
+  price: number
 }
 
 export type RenewRequest = {
   priority: number,
   creep: Creep
+}
+
+export type BodyDesign = {
+  body: string[],
+  price: number
 }
 
 export type SpawnerQueueElement = SpawnRequest | RenewRequest;
@@ -50,27 +56,33 @@ export abstract class Manager {
     return price;
   }
 
-  static getBodyParts(priorities: string[], energy: number): string[] {
-    let parts: string[] = [];
+  static getBodyParts(priorities: string[], energy: number): BodyDesign {
+    let design = <BodyDesign>{
+      "body": <string[]>[],
+      "price": 0
+    };
     let curEnergy = energy;
     let firstTake = true; // all parts in priorities should be there once.
     let minPrice = BODYPART_COST[priorities[0]];
-    while (curEnergy > minPrice) {
+    while (energy - design.price > minPrice) {
       for (let i = 0; i < priorities.length; i++) {
         let partCost =  BODYPART_COST[priorities[i]];
         if (firstTake && minPrice > partCost) {
           minPrice = partCost;
         }
-        if (curEnergy > partCost) {
-          parts.push(priorities[i]);
+        if (energy - design.price > partCost) {
+          design.body.push(priorities[i]);
+          design.price += partCost;
           curEnergy -= partCost;
         } else if (firstTake) {
-          return <string[]>[];
+          design.body = [];
+          design.price = 0;
+          return design;
         }
       }
       firstTake = false;
     }
-    return parts;
+    return design;
   }
 }
 
