@@ -39,7 +39,9 @@ export class HarvesterManager extends Mngr.Manager {
   }
 
   getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    let room = Game.spawns['Spawn1'].room;
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(0);
+
     let minBodyParts = [WORK, CARRY, MOVE];
     if (this.minions.length == 0) {
       res.push({
@@ -54,7 +56,11 @@ export class HarvesterManager extends Mngr.Manager {
       Memory.harvester = {};
     }
     if(!Memory.harvester.sources) {
-      Memory.harvester.sources = this.calcSources(Game.spawns['Spawn1'].room);
+      Memory.harvester.sources = this.calcSources(room);
+    }
+    if(!Memory.harvester.hasExtensionsPlanned && room.controller && room.controller.level >= 2) {
+      this.calcExtensions(room, Memory.harvester.sources);
+      Memory.harvester.hasExtensionsPlanned = true;
     }
     // Create harvesters at p200 if there's only unsafe sources, otherwise as p0.
     let priority = 200;
