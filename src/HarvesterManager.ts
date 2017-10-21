@@ -5,6 +5,7 @@ import * as Harvester from "./Harvester";
 export interface SourceDefinition {
   id: string,
   miningPositions: [number, number][],
+  extensionPositions?: [number, number][],
   unsafe: boolean,
   distance: number
 }
@@ -105,6 +106,83 @@ export class HarvesterManager extends Mngr.Manager {
       return true;
     });
     return _.sortBy(res, ['unsafe', 'distance']);
+  }
+
+  _getRoomCostMatrix(room: Room): CostMatrix {
+    let costs: CostMatrix = PathFinder.CostMatrix;
+    // Do a useless pathfind and steal the passed in CostMatrix and return that.
+    room.findPath(new RoomPosition(0, 1, room.name), new RoomPosition(1, 0, room.name), {
+      "ignoreCreeps": true,
+      "ignoreRoads": true,
+      "maxOps": 3,
+      "costCallback": function(_room: string, cm: CostMatrix) {
+        costs = cm;
+        return false;
+      }
+    });
+    return costs;
+  }
+
+  calcExtensions(room: Room, srcs: SourceDefinition[]) {
+    let self = this;
+    _.forEach(srcs, function(src: SourceDefinition) {
+      let source = <Source>Game.getObjectById(src.id);
+      let costs = self._getRoomCostMatrix(room);
+      let p = source.pos;
+      let terrain = room.lookForAtArea(LOOK_TERRAIN, p.y-3, p.x-3, p.y+3, p.x+3, false);
+      _.forEach(terrain, function(tmp: LookAtResultMatrix, y: any) {
+        _.forEach(tmp, function(what: string, x: any) {
+          if (what == "wall") {
+            // Not needed for pathFinder, but to prevent trying to build there.
+            costs.set(x, y, 255);
+          }
+        });
+      });
+      costs.set(source.pos.x, source.pos.x, 255);
+      _.forEach(src.miningPositions, function(pos: [number, number]) {
+        costs.set(pos[0], pos[1], 255);
+      });
+      let res = self._tryExtensionSpot(room, src, costs, 0);
+      console.log(src.id +": "+ JSON.stringify(res));
+      if(res) {
+        src.extensionPositions = res;
+      }
+    });
+  }
+
+  _tryExtensionSpot(room: Room, src: SourceDefinition, costs: CostMatrix, minerIdx: number): [number, number][] | false {
+    let mp = src.miningPositions[minerIdx];
+    for(var x = Math.max(0, mp[0]-1); Math.min(49, mp[0]+1) > x; x++) {
+      for(var y = Math.max(0, mp[1]-1); Math.min(49, mp[1]+1) > y; y++) {
+        if (costs.get(x, y) == 255) {
+          continue
+        }
+        costs.set(x, y, 255);
+        if (src.miningPositions.length-1 == minerIdx) {
+          for(var i = 0; src.miningPositions.length > i; i++) {
+            let omp = src.miningPositions[i];
+            let path = room.findPath(Game.spawns['Spawn1'].pos, new RoomPosition(omp[0], omp[1], room.name), {
+              "ignoreCreeps": true,
+              "ignoreRoads": true,
+              "costCallback": function(_room: string, _cm: CostMatrix) {
+                return costs;
+              }
+            });
+            if (path.length == 0 || path[path.length-1].x != omp[0] || path[path.length-1].y != omp[1]) {
+              costs.set(x, y, 0);
+              return false;
+            }
+          }
+          return [[x, y]];
+        }
+        let res = this._tryExtensionSpot(room, src, costs, minerIdx+1);
+        if (res) {
+          return <[number, number][]>([[x, y]]).concat(res);
+        }
+        costs.set(x, y, 0);
+      }
+    }
+    return false;
   }
 
   static getMyConsumer(creep: Creep): Creep | Structure {
