@@ -89,7 +89,7 @@ export class HarvesterManager extends Manager.Manager {
           }
         });
       });
-      unsafe = !Fmngr.FighterManager.isSafePos(src.pos)
+      let unsafe = !Fmngr.FighterManager.isSafePos(src.pos)
       let distances: number[] = [];
       _.forEach(Game.spawns, function(spawn: StructureSpawn) {
         distances.push(src.pos.findPathTo(spawn).length);
