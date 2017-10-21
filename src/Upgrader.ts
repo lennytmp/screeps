@@ -1,4 +1,11 @@
 export function run(creep: Creep): void {
+  let spawner = Game.spawns['Spawn1'];
+  if(spawner.room.controller && spawner.room.controller.level >= Memory.targetRCL) {
+    if(spawner.recycleCreep(creep) == ERR_NOT_IN_RANGE) {
+      creep.moveTo(spawner);
+    }
+    return;
+  }
   if(creep.memory.upgrading && creep.carry.energy == 0) {
     creep.memory.upgrading = false;
   }
@@ -12,11 +19,8 @@ export function run(creep: Creep): void {
     }
   }
   else {
-    var spawner = Game.spawns['Spawn1'];
     if (creep.withdraw(spawner, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
       creep.moveTo(spawner);
     }
   }
 }
-
-

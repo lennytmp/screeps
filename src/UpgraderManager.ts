@@ -12,11 +12,15 @@ export class UpgraderManager extends Mngr.Manager {
   }
 
   getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    if (!Memory.targetRCL) {
+      Memory.targetRCL = 1;
+    }
     let priority = 10;
+    let room = Game.spawns['Spawn1'].room;
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(priority);
     let minBodyParts = [WORK, CARRY, MOVE];
     let design = UpgraderManager.getBodyParts(minBodyParts, maxEnergy);
-    if (this.minions.length < 1) {
+    if (this.minions.length < 1 && room.controller && room.controller.level < Memory.targetRCL) {
       res.push({
         "priority": priority,
         "parts": design.body,
