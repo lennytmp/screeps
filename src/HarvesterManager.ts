@@ -1,6 +1,7 @@
 import * as Mngr from "./Manager";
 import * as Fmngr from "./FighterManager";
 import * as Harvester from "./Harvester";
+import * as Utils from "./Utils";
 
 export interface SourceDefinition {
   id: string,
@@ -35,7 +36,11 @@ export class HarvesterManager extends Mngr.Manager {
           return true;
         });
       }
-      Harvester.run(minion, minion.memory.source);
+      let dsts = Utils.getAdjacentStructures(minion.pos, STRUCTURE_EXTENSION, 1);
+      if (dsts.length == 0) {
+        dsts = [Game.spawns['Spawn1']];
+      }
+      Harvester.run(minion, minion.memory.source, dsts[0]);
     });
   }
 
@@ -213,5 +218,4 @@ export class HarvesterManager extends Mngr.Manager {
         }
     });
   }
-
 }

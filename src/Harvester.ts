@@ -1,6 +1,4 @@
-import * as Hmngr from "./HarvesterManager";
-
-export function run(creep: Creep, src: string): void {
+export function run(creep: Creep, src: string, dst: Structure): void {
   if (creep.memory.harvesting && creep.carry.energy == creep.carryCapacity) {
     creep.memory.harvesting = false;
   } else if (!creep.memory.harvesting && creep.carry.energy == 0) {
@@ -11,15 +9,12 @@ export function run(creep: Creep, src: string): void {
     if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
       creep.moveTo(source);
     }
-  } else {
-    // TODO: consumer should be passed into run() instead.
-    let consumer = Hmngr.HarvesterManager.getMyConsumer(creep);
-    if (consumer == null) {
-      return;
-    }
-    if (creep.transfer(consumer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(consumer);
+  }
+  // Always try to transfer into our consumer.
+  if (creep.transfer(dst, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+    if(!creep.memory.harvesting) {
+      // But only move if we're full (or were full and haven't dropped everything yet)
+      creep.moveTo(dst);
     }
   }
 }
-
