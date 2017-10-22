@@ -27,11 +27,7 @@ export class BuilderManager extends Mngr.Manager {
     if (!BuilderManager.existConstruction()) {
       _.forEach(Game.rooms, function(room: Room) {
         if (room.controller!.level == 2) {
-          if (!room.memory.ext_planned) {
-            room.memory.ext_planned =
-                BuilderManager.planExtensions(spawn, EXTENSIONS_AVAILABLE["2"]);
-            return true;
-          }
+          // TODO: we'll probably decide on the same tick to build extensions as to build roads. We should prioritize the extensions. See the TODO in HarvesterManager before fixing this TODO.
           if (!room.memory.roads_planned) {
             BuilderManager.planRoadsFromSpawn(spawn);
             room.memory.roads_planned = true;

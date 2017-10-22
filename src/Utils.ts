@@ -36,6 +36,24 @@ export function isNearStructure(pos: RoomPosition,
   return false;
 }
 
+export function getAdjacentStructures(pos: RoomPosition, structureType: string, distance: number): Structure[] {
+  let ret: Structure[] = [];
+  let area = getArea(pos, distance);
+  let resPositions = Game.rooms[pos.roomName].lookForAtArea(LOOK_STRUCTURES,
+                                                            area.minY,
+                                                            area.minX,
+                                                            area.maxY,
+                                                            area.maxX,
+                                                            true);
+  for (let i in resPositions) {
+    let resPos = <LookAtResultWithPos>resPositions[i];
+    if (resPos.structure!.structureType == structureType) {
+      ret.push(resPos.structure!);
+    }
+  }
+  return ret;
+}
+
 export function getBodyArray(bodyStruct: BodyPartDefinition[]): string[] {
   let result: string[] = [];
   for (let i in bodyStruct) {

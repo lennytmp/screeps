@@ -2,6 +2,7 @@ import * as Ed from "./EnergyDistributor";
 import * as Fmngr from "./FighterManager";
 import * as Harvester from "./Harvester";
 import * as Mngr from "./Manager";
+import * as Utils from "./Utils";
 
 export interface SourceDefinition {
   id: string,
@@ -56,7 +57,11 @@ export class HarvesterManager extends Mngr.Manager {
           return true;
         });
       }
-      Harvester.run(minion, minion.memory.source);
+      let dsts = Utils.getAdjacentStructures(minion.pos, STRUCTURE_EXTENSION, 1);
+      if (dsts.length == 0) {
+        dsts = [Game.spawns['Spawn1']];
+      }
+      Harvester.run(minion, minion.memory.source, dsts[0]);
     });
   }
 
@@ -177,6 +182,7 @@ export class HarvesterManager extends Mngr.Manager {
       if(res) {
         src.extensionPositions = res;
         _.forEach(res, function(pos: [number, number]) {
+          // TODO: don't create all at once, but give them to the BuilderManager to create them such that it's below the RCL limit.
           room.createConstructionSite(pos[0], pos[1], STRUCTURE_EXTENSION);
         });
       }
@@ -234,5 +240,4 @@ export class HarvesterManager extends Mngr.Manager {
         }
     });
   }
-
 }

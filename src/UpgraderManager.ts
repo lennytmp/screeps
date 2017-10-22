@@ -31,7 +31,7 @@ export class UpgraderManager extends Mngr.Manager {
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.priority);
     let minBodyParts = [WORK, CARRY, MOVE];
     let design = UpgraderManager.getBodyParts(minBodyParts, maxEnergy);
-    if (this.minions.length < 1 && room.controller && room.controller.level < Memory.targetRCL) {
+    if (this.minions.length < 3 && room.controller && room.controller.level < Memory.targetRCL) {
       res.push({
         "priority": this.priority,
         "parts": design.body,
