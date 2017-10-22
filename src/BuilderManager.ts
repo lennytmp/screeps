@@ -1,6 +1,7 @@
-import * as Mngr from "./Manager";
-import * as Fmngr from "./FighterManager";
 import * as Builder from "./Builder";
+import * as Ed from "./EnergyDistributor";
+import * as Fmngr from "./FighterManager";
+import * as Mngr from "./Manager";
 import * as Utils from "./Utils";
 
 const EXTENSIONS_AVAILABLE = {"2": 5};
@@ -9,6 +10,16 @@ const NATURAL_WALL = "wall"
 export class BuilderManager extends Mngr.Manager {
 
   readonly role = 'builder';
+  priority: number = 20;
+
+  registerOnEnergyMarket(): void {
+    for (let i in this.minions) {
+      let minion = this.minions[i];
+      if (minion.carry.energy == 0) {
+        Ed.EnergyDistributor.registerRequest(minion, this.priority, minion.carryCapacity);
+      }
+    }
+  }
 
   commandMinions(): void {
     var spawn = Game.spawns['Spawn1'];
@@ -29,14 +40,13 @@ export class BuilderManager extends Mngr.Manager {
         return true;
       });
     }
-    _.forEach(this.minions, function(minion: Creep) {
-        Builder.run(minion);
-    });
+    for (let i in this.minions) {
+      Builder.run(this.minions[i]);
+    }
   }
 
   getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
-    let priority = 20;
-    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(priority);
+    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.priority);
     let minBodyParts = [WORK, CARRY, MOVE];
     if (!BuilderManager.existConstruction() ||
         this.minions.length >= 3) {
@@ -44,7 +54,7 @@ export class BuilderManager extends Mngr.Manager {
     }
     let design = BuilderManager.getBodyParts(minBodyParts, maxEnergy);
     res.push({
-      "priority": priority,
+      "priority": this.priority,
       "parts": design.body,
       "role": this.role,
       "price": design.price
@@ -54,12 +64,7 @@ export class BuilderManager extends Mngr.Manager {
 
   static planExtensions(spawn: StructureSpawn, num: number): boolean {
     let space = Utils.getArea(spawn.pos, 3);
-    let resPositions = spawn.room.lookForAtArea(LOOK_TERRAIN,
-                                                space.minY,
-                                                space.minX,
-                                                space.maxY,
-                                                space.maxX,
-                                                true);
+    let resPositions = spawn.room.lookForAtArea(LOOK_TERRAIN, space.minY, space.minX, space.maxY, space.maxX, true);
     _.forEach(resPositions, function(resPos: LookAtResultWithPos) {
         if (resPos.terrain == NATURAL_WALL) {
           return true;

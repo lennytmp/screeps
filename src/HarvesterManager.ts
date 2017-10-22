@@ -1,6 +1,7 @@
-import * as Mngr from "./Manager";
+import * as Ed from "./EnergyDistributor";
 import * as Fmngr from "./FighterManager";
 import * as Harvester from "./Harvester";
+import * as Mngr from "./Manager";
 
 export interface SourceDefinition {
   id: string,
@@ -10,9 +11,29 @@ export interface SourceDefinition {
   distance: number
 }
 
+
 export class HarvesterManager extends Mngr.Manager {
 
   readonly role = 'harvester';
+
+  registerOnEnergyMarket(): void {
+    for (let i in Game.structures) {
+      let struct = Game.structures[i];
+      if (Ed.EnergyContainer.isEnergyContainerSource(struct)) {
+        let cnt = new Ed.EnergyContainer(struct);
+        if (cnt.energy > 0) {
+          Ed.EnergyDistributor.registerOffer(cnt, cnt.energy);
+        }
+      }
+    }
+    for (let i in this.minions) {
+      let minion = this.minions[i];
+      if (minion.carry![RESOURCE_ENERGY]! > 0) {
+        let cnt = new Ed.EnergyContainer(minion);
+        Ed.EnergyDistributor.registerOffer(cnt, cnt.energy);
+      }
+    }
+  }
 
   commandMinions(): void {
     let needs: { [id: string]: number; } = {};

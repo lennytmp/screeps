@@ -40,6 +40,8 @@ export abstract class Manager {
 
   abstract commandMinions(): void;
 
+  registerOnEnergyMarket(): void {};
+
   getRenewRequests(priority: number): RenewRequest[] {
     let requests: RenewRequest[] = [];
     _.forEach(this.minions, function(minion: Creep) {

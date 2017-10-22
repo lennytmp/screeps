@@ -34,12 +34,24 @@ export function loop() {
 
     let spawner = Game.spawns['Spawn1'];
 
+    // register energy market 
+    _.forEach(managers, function(manager: Mngr.Manager) {
+        manager.registerOnEnergyMarket();
+    });
+    profiler.registerEvent("registering energy requests");
+
     // get orders
     let requests: Mngr.SpawnerQueueElement[] = []; //TODO: this should be heap.
     _.forEach(managers, function(manager: Mngr.Manager) {
         requests = requests.concat(
           manager.getSpawnOrders(spawner.room.energyAvailable,
                                  spawner.room.energyCapacityAvailable));
+        // copy requests to energy prioritisation
+        for (let i in requests) {
+          Ed.EnergyDistributor.registerRequest(spawner,
+                                               requests[i].priority,
+                                               requests[i].price);
+        }
     });
     profiler.registerEvent("orders generation");
 
@@ -65,6 +77,7 @@ export function loop() {
         manager.commandMinions();
     });
     profiler.registerEvent("commanding minions");
+
 
     if (profile && profiler.getDuration() > 10) {
       console.log(profiler.getOutput());
