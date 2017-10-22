@@ -161,6 +161,7 @@ export class HarvesterManager extends Mngr.Manager {
       if(res) {
         src.extensionPositions = res;
         _.forEach(res, function(pos: [number, number]) {
+          // TODO: don't create all at once, but give them to the BuilderManager to create them such that it's below the RCL limit.
           room.createConstructionSite(pos[0], pos[1], STRUCTURE_EXTENSION);
         });
       }

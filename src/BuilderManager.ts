@@ -16,11 +16,7 @@ export class BuilderManager extends Mngr.Manager {
     if (!BuilderManager.existConstruction()) {
       _.forEach(Game.rooms, function(room: Room) {
         if (room.controller!.level == 2) {
-          if (!room.memory.ext_planned) {
-            room.memory.ext_planned =
-                BuilderManager.planExtensions(spawn, EXTENSIONS_AVAILABLE["2"]);
-            return true;
-          }
+          // TODO: we'll probably decide on the same tick to build extensions as to build roads. We should prioritize the extensions. See the TODO in HarvesterManager before fixing this TODO.
           if (!room.memory.roads_planned) {
             BuilderManager.planRoadsFromSpawn(spawn);
             room.memory.roads_planned = true;
@@ -50,29 +46,6 @@ export class BuilderManager extends Mngr.Manager {
       "price": design.price
     });
     return res;
-  }
-
-  static planExtensions(spawn: StructureSpawn, num: number): boolean {
-    let space = Utils.getArea(spawn.pos, 3);
-    let resPositions = spawn.room.lookForAtArea(LOOK_TERRAIN,
-                                                space.minY,
-                                                space.minX,
-                                                space.maxY,
-                                                space.maxX,
-                                                true);
-    _.forEach(resPositions, function(resPos: LookAtResultWithPos) {
-        if (resPos.terrain == NATURAL_WALL) {
-          return true;
-        }
-        let pos = new RoomPosition(resPos.x, resPos.y, spawn.room.name);
-        if (!pos.inRangeTo(spawn, 1)) {
-          if (pos.createConstructionSite(STRUCTURE_EXTENSION) == OK) {
-            num--;
-          }
-        }
-        return num > 0;
-    });
-    return num == 0;
   }
 
   static planRoadsFromSpawn(spawn: StructureSpawn): void {
