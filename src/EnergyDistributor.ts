@@ -31,7 +31,7 @@ export class EnergyContainer {
       if (!a.carry) {
         this.energy = 0;
       } else {
-        this.energy = a.carry![RESOURCE_ENERGY]!;
+        this.energy = a.carry[RESOURCE_ENERGY]!;
       }
       this.energyCapacity = a.carryCapacity;
     }

@@ -29,7 +29,7 @@ export class HarvesterManager extends Mngr.Manager {
     }
     for (let i in this.minions) {
       let minion = this.minions[i];
-      if (minion.carry![RESOURCE_ENERGY]! > 0) {
+      if (minion.carry && minion.carry[RESOURCE_ENERGY]! > 0) {
         let cnt = new Ed.EnergyContainer(minion);
         Ed.EnergyDistributor.registerOffer(cnt, cnt.energy);
       }
