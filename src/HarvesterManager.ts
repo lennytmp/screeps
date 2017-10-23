@@ -6,8 +6,8 @@ import * as Utils from "./Utils";
 
 export interface SourceDefinition {
   id: string,
-  miningPositions: [number, number][],
-  extensionPositions?: [number, number][],
+  miningPositions: RoomPosition[],
+  extensionPositions?: RoomPosition[],
   unsafe: boolean,
   distance: number
 }
@@ -118,12 +118,12 @@ export class HarvesterManager extends Mngr.Manager {
     let sources = <Source[]>room.find(FIND_SOURCES);
     _.forEach(sources, function(src: Source) {
       let p = src.pos;
-      let positions: [number, number][] = [];
+      let positions: RoomPosition[] = [];
       let area = room.lookForAtArea(LOOK_TERRAIN, p.y-1, p.x-1, p.y+1, p.x+1, false);
       _.forEach(area, function(tmp: LookAtResultMatrix, y: any) {
         _.forEach(tmp, function(what: string, x: any) {
           if(what == "plain") {
-            positions.push([x, y]);
+            positions.push(new RoomPosition(x, y, room.name));
           }
         });
       });
@@ -177,25 +177,26 @@ export class HarvesterManager extends Mngr.Manager {
         });
       });
       costs.set(source.pos.x, source.pos.x, 255);
-      _.forEach(src.miningPositions, function(pos: [number, number]) {
-        costs.set(pos[0], pos[1], 255);
+      _.forEach(src.miningPositions, function(pos: RoomPosition) {
+        costs.set(pos.x, pos.y, 255);
       });
       let res = self._tryExtensionSpot(room, src, costs, 0);
       console.log(src.id +": "+ JSON.stringify(res));
       if(res) {
         src.extensionPositions = res;
-        _.forEach(res, function(pos: [number, number]) {
+        _.forEach(res, function(pos: RoomPosition) {
           // TODO: don't create all at once, but give them to the BuilderManager to create them such that it's below the RCL limit.
-          room.createConstructionSite(pos[0], pos[1], STRUCTURE_EXTENSION);
+          room.createConstructionSite(pos.x, pos.y, STRUCTURE_EXTENSION);
         });
       }
     });
   }
 
-  _tryExtensionSpot(room: Room, src: SourceDefinition, costs: CostMatrix, minerIdx: number): [number, number][] | false {
+  _tryExtensionSpot(room: Room, src: SourceDefinition, costs: CostMatrix, minerIdx: number): RoomPosition[] | false {
     let mp = src.miningPositions[minerIdx];
-    for(var x = Math.max(0, mp[0]-1); Math.min(49, mp[0]+1) > x; x++) {
-      for(var y = Math.max(0, mp[1]-1); Math.min(49, mp[1]+1) > y; y++) {
+    // TODO: use Utils.getArea
+    for(var x = Math.max(0, mp.x-1); Math.min(49, mp.x+1) > x; x++) {
+      for(var y = Math.max(0, mp.y-1); Math.min(49, mp.y+1) > y; y++) {
         if (costs.get(x, y) == 255) {
           continue
         }
@@ -203,23 +204,23 @@ export class HarvesterManager extends Mngr.Manager {
         if (src.miningPositions.length-1 == minerIdx) {
           for(var i = 0; src.miningPositions.length > i; i++) {
             let omp = src.miningPositions[i];
-            let path = room.findPath(Game.spawns['Spawn1'].pos, new RoomPosition(omp[0], omp[1], room.name), {
+            let path = room.findPath(Game.spawns['Spawn1'].pos, omp, {
               "ignoreCreeps": true,
               "ignoreRoads": true,
               "costCallback": function(_room: string, _cm: CostMatrix) {
                 return costs;
               }
             });
-            if (path.length == 0 || path[path.length-1].x != omp[0] || path[path.length-1].y != omp[1]) {
+            if (path.length == 0 || path[path.length-1].x != omp.x || path[path.length-1].y != omp.y) {
               costs.set(x, y, 0);
               return false;
             }
           }
-          return [[x, y]];
+          return [new RoomPosition(x, y, room.name)];
         }
         let res = this._tryExtensionSpot(room, src, costs, minerIdx+1);
         if (res) {
-          return <[number, number][]>([[x, y]]).concat(res);
+          return <RoomPosition[]>([new RoomPosition(x, y, room.name)]).concat(res);
         }
         costs.set(x, y, 0);
       }
