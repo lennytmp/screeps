@@ -1,25 +1,27 @@
 import * as Ed from "./EnergyDistributor";
 import * as Mngr from "./Manager";
-import * as Upgrader from "./Upgrader";
+import * as U from "./Upgrader";
 
 export class UpgraderManager extends Mngr.Manager {
 
   readonly role = "upgrader";
   priority:number = 10;
+  upgraders: U.Upgrader[] = [];
+
+  registerMinion(creep: Creep) {
+    this.upgraders.push(new U.Upgrader(creep));
+    this.minions.push(creep);
+  }
 
   registerOnEnergyMarket(): void {
-    for (let i in this.minions) {
-      let minion = this.minions[i];
-      if (minion.carry.energy == 0) {
-        Ed.EnergyDistributor.registerRequest(minion, this.priority, minion.carryCapacity);
-      }
+    for (let i in this.upgraders) {
+      this.upgraders[i].registerRequest(this.priority);
     }
   }
 
   commandMinions(): void {
-    for (let i in this.minions) {
-      let minion = this.minions[i];
-      Upgrader.run(minion);
+    for (let i in this.upgraders) {
+      this.upgraders[i].run();
     }
   }
 

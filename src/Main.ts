@@ -34,7 +34,7 @@ export function loop() {
 
     let spawner = Game.spawns['Spawn1'];
 
-    // register energy market 
+    // register energy market
     _.forEach(managers, function(manager: Mngr.Manager) {
         manager.registerOnEnergyMarket();
     });

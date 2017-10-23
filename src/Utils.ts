@@ -62,3 +62,6 @@ export function getBodyArray(bodyStruct: BodyPartDefinition[]): string[] {
   return result;
 }
 
+export function isCreep(a: any): a is Creep {
+  return (<Creep>a).body !== undefined && (<Creep>a).withdraw !== undefined;
+}

@@ -1,3 +1,5 @@
+import * as Utils from "./Utils";
+
 type EnergyEntity = Creep | Structure;
 
 type EnergyRequest = {
@@ -40,6 +42,24 @@ export class EnergyContainer {
     this.obj = a;
   }
 
+  getEnergy(c: EnergyEntity, amount?: number):void {
+    if (Utils.isCreep(this.obj)) {
+      if (amount) {
+        this.obj.transfer(c, RESOURCE_ENERGY, amount);
+        return;
+      }
+      this.obj.transfer(c, RESOURCE_ENERGY);
+      return;
+    } else if (Utils.isCreep(c)) {
+      if (amount) {
+        c.withdraw(this.obj, RESOURCE_ENERGY, amount);
+        return;
+      }
+      c.withdraw(this.obj, RESOURCE_ENERGY);
+    }
+    throw new Error("Either the consumer or provider of energy must be a creep");
+  }
+
   static isEnergyContainerSource(a: any): a is EnergyContainerSource {
     return (<StructureSpawn | StructureExtension>a).energyCapacity !== undefined ||
       (<StructureContainer>a).storeCapacity !== undefined ||
@@ -61,10 +81,10 @@ export class EnergyDistributor {
       "priority": priority,
       "energy": energy,
       "fulfilled": false,
-      "clb": clb 
+      "clb": clb
     });
   }
-  
+
   static registerOffer(provider: EnergyContainer, energy: number): void {
     EnergyDistributor.offers.push(<EnergyOffer>{
       "provider": provider,
@@ -87,6 +107,13 @@ export class EnergyDistributor {
                 offer.provider.obj instanceof StructureExtension)) {
             continue;
           }
+          if (!Utils.isCreep(offer.provider.obj) &&
+              !Utils.isCreep(request.consumer) &&
+              !EnergyDistributor.isSpawnMatch(request, offer)) {
+            // TODO: two stuctures want to exchange energy. Should we call carriers?
+            continue;
+          }
+          // TODO: this should take into account distance to source
           let charge: number = Math.min(offer.energy, request.energy);
           request.energy -= charge;
           offer.energy -= charge;
@@ -99,5 +126,11 @@ export class EnergyDistributor {
         }
       }
     }
+  }
+
+  private static isSpawnMatch(r: EnergyRequest, o: EnergyOffer): boolean {
+    return (o.provider.obj instanceof StructureSpawn ||
+             o.provider.obj instanceof StructureExtension) &&
+           r.consumer instanceof StructureSpawn;
   }
 }
