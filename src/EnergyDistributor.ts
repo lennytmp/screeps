@@ -3,7 +3,8 @@ type EnergyEntity = Creep | Structure;
 type EnergyRequest = {
   priority: number,
   energy: number,
-  consumer: EnergyEntity
+  consumer: EnergyEntity,
+  fulfilled: boolean
 }
 
 type EnergyOffer = {
@@ -54,7 +55,9 @@ export class EnergyDistributor {
     EnergyDistributor.requests.push(<EnergyRequest>{
       "consumer": consumer,
       "priority": priority,
-      "energy": energy});
+      "energy": energy,
+      "fulfilled": false
+    });
   }
   
   static registerOffer(provider: EnergyContainer, energy: number): void {
@@ -64,7 +67,26 @@ export class EnergyDistributor {
     });
   }
 
-  // static getMeProvider(pos: RoomPosition, energy: number): EnergyEntity;
-  
-  // static getMeConsumer(pos: RoomPosition, energy: number): EnergyEntity;
+  static marketMatch(): void {
+    EnergyDistributor.requests.sort(function(a: EnergyRequest, b: EnergyRequest) {
+      return a.priority - b.priority;
+    });
+    for (let i in EnergyDistributor.requests) {
+      let request = EnergyDistributor.requests[i];
+      for (let j in EnergyDistributor.offers) {
+        let offer = EnergyDistributor.offers[j];
+        if (offer.energy > 0) {
+          let charge: number = Math.min(offer.energy, request.energy);
+          request.energy -= charge;
+          offer.energy -= charge;
+          if (request.energy == 0) {
+            request.fulfilled = true;
+            // TODO(lennytmp): this should be calling a callback instead since
+            // it's not easy to check specific requests if they were fulfilled.
+            console.log("fulfilled " + request.energy + " P" + request.priority);
+          }
+        }
+      }
+    }
+  }
 }

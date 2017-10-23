@@ -55,6 +55,8 @@ export function loop() {
     });
     profiler.registerEvent("orders generation");
 
+    Ed.EnergyDistributor.marketMatch();
+
     // try building top one priority
     if (requests.length > 0) {
       let order: Mngr.SpawnerQueueElement = requests[0];
