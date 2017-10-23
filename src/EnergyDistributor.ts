@@ -4,7 +4,8 @@ type EnergyRequest = {
   priority: number,
   energy: number,
   consumer: EnergyEntity,
-  fulfilled: boolean
+  fulfilled: boolean,
+  clb: (e: EnergyContainer) => void
 }
 
 type EnergyOffer = {
@@ -17,7 +18,7 @@ export type EnergyContainerSource = StructureSpawn | StructureExtension | Struct
 export class EnergyContainer {
   energy: number = 0;
   energyCapacity: number = 0;
-  pos: RoomPosition;
+  obj: EnergyContainerSource;
 
   constructor(a: StructureSpawn | StructureExtension | StructureContainer | Creep) {
     if (a instanceof StructureSpawn || a instanceof StructureExtension) {
@@ -36,7 +37,7 @@ export class EnergyContainer {
       }
       this.energyCapacity = a.carryCapacity;
     }
-    this.pos = a.pos;
+    this.obj = a;
   }
 
   static isEnergyContainerSource(a: any): a is EnergyContainerSource {
@@ -51,12 +52,16 @@ export class EnergyDistributor {
   static requests: EnergyRequest[] = [];
   static offers: EnergyOffer[] = [];
 
-  static registerRequest(consumer: EnergyEntity, priority: number, energy: number): void {
+  static registerRequest(consumer: EnergyEntity,
+                         priority: number,
+                         energy: number,
+                         clb: (e: EnergyContainer) => void): void {
     EnergyDistributor.requests.push(<EnergyRequest>{
       "consumer": consumer,
       "priority": priority,
       "energy": energy,
-      "fulfilled": false
+      "fulfilled": false,
+      "clb": clb 
     });
   }
   
@@ -73,17 +78,23 @@ export class EnergyDistributor {
     });
     for (let i in EnergyDistributor.requests) {
       let request = EnergyDistributor.requests[i];
+      let spawnRequest = request.consumer instanceof StructureSpawn;
       for (let j in EnergyDistributor.offers) {
         let offer = EnergyDistributor.offers[j];
         if (offer.energy > 0) {
+          if (spawnRequest && !(
+                offer.provider.obj instanceof StructureSpawn  ||
+                offer.provider.obj instanceof StructureExtension)) {
+            continue;
+          }
           let charge: number = Math.min(offer.energy, request.energy);
           request.energy -= charge;
           offer.energy -= charge;
           if (request.energy == 0) {
             request.fulfilled = true;
-            // TODO(lennytmp): this should be calling a callback instead since
-            // it's not easy to check specific requests if they were fulfilled.
-            console.log("fulfilled " + request.energy + " P" + request.priority);
+            if (request.clb) {
+              request.clb(offer.provider);
+            }
           }
         }
       }

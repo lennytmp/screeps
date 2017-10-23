@@ -40,7 +40,7 @@ export function loop() {
     });
     profiler.registerEvent("registering energy requests");
 
-    // get orders
+    // get spawn orders
     let requests: Mngr.SpawnerQueueElement[] = []; //TODO: this should be heap.
     _.forEach(managers, function(manager: Mngr.Manager) {
         requests = requests.concat(
@@ -48,31 +48,23 @@ export function loop() {
                                  spawner.room.energyCapacityAvailable));
         // copy requests to energy prioritisation
         for (let i in requests) {
+          let request = requests[i];
+          let clb = function(_e: Ed.EnergyContainer): void {
+            if (Mngr.isSpawnRequest(request)) {
+              spawner.spawnCreep(request.parts, request.role + (""+Math.random()).substring(2));
+            } else {
+              spawner.renewCreep(request.creep);
+            }
+          }
           Ed.EnergyDistributor.registerRequest(spawner,
-                                               requests[i].priority,
-                                               requests[i].price);
+                                               request.priority,
+                                               request.price,
+                                               clb);
         }
     });
     profiler.registerEvent("orders generation");
 
     Ed.EnergyDistributor.marketMatch();
-
-    // try building top one priority
-    if (requests.length > 0) {
-      let order: Mngr.SpawnerQueueElement = requests[0];
-      _.forEach(requests, function(request: Mngr.SpawnerQueueElement) {
-          if (request.priority < order.priority) {
-            order = request;
-          }
-      });
-      if (Mngr.isSpawnRequest(order)) {
-        Game.spawns['Spawn1'].spawnCreep(order.parts,
-                                         order.role + (""+Math.random()).substring(2));
-      } else {
-        spawner.renewCreep(order.creep);
-      }
-    }
-    profiler.registerEvent("max order execution");
 
     // command minions
     _.forEach(managers, function(manager: Mngr.Manager) {
