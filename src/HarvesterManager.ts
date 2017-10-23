@@ -117,9 +117,6 @@ export class HarvesterManager extends Mngr.Manager {
     let res: SourceDefinition[] = [];
     let sources = <Source[]>room.find(FIND_SOURCES);
     _.forEach(sources, function(src: Source) {
-      if (!Fmngr.FighterManager.isSafePos(src.pos)) {
-       return true; 
-      }
       let p = src.pos;
       let positions: [number, number][] = [];
       let area = room.lookForAtArea(LOOK_TERRAIN, p.y-1, p.x-1, p.y+1, p.x+1, false);
@@ -131,6 +128,9 @@ export class HarvesterManager extends Mngr.Manager {
         });
       });
       let unsafe = !Fmngr.FighterManager.isSafePos(src.pos)
+      if(unsafe) {
+        return true;
+      }
       let distances: number[] = [];
       _.forEach(Game.spawns, function(spawn: StructureSpawn) {
         distances.push(src.pos.findPathTo(spawn).length);
