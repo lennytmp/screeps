@@ -48,7 +48,11 @@ export class HarvesterManager extends Mngr.Manager {
           let ep = s.extensionPositions[i];
           let structures = <Structure[]>Game.rooms[mp.roomName].lookForAt(LOOK_STRUCTURES, Utils.unserializeRoomPosition(ep));
           if (structures.length > 0) {
-            mp2ext[Utils.posToString(mp)] = structures[0];
+            for (let struct of structures) {
+              if (Ed.EnergyContainer.isEnergyContainerSource(struct)) {
+                mp2ext[Utils.posToString(mp)] = struct;
+              }
+            }
           }
         }
       }
