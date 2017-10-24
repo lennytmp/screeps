@@ -39,14 +39,20 @@ export class BuilderManager extends Mngr.Manager {
       Memory.builder = {
         "queue": [],
         "blocked_by_rcl": [],
+        "desiredRCL": 0,
       };
     }
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.priority);
     if (!BuilderManager.existConstruction()) {
+      if(Memory.builder.blocked_by_rcl.length > 0 && Memory.builder.desiredRCL <= Game.rooms[Memory.builder.blocked_by_rcl[0].positions[0].roomName].controller!.level) {
+        Memory.builder.queue = [].concat(Memory.builder.blocked_by_rcl, Memory.builder.queue);
+        Memory.builder.queue.blocked_by_rcl = [];
+      }
       if(Memory.builder.queue.length == 0) {
         return res;
       }
       let b = Memory.builder.queue.shift();
+      console.log("BuilderManager: gonna work on "+ JSON.stringify(b));
       let room = Game.rooms[b.positions[0].roomName];
       if (b.type == STRUCTURE_EXTENSION) {
         let max = EXTENSIONS_AVAILABLE[room.controller!.level];
@@ -55,12 +61,14 @@ export class BuilderManager extends Mngr.Manager {
         });
         if(b.positions.length + extensions.length > max) {
           Memory.builder.blocked_by_rcl.push(b);
+          Memory.builder.desiredRCL = room.controller!.level + 1
           // We'll try the next queue entry next tick.
           return res;
         }
       }
       _.forEach(b.positions, function(pos: RoomPosition) {
-        Game.rooms[pos.roomName].createConstructionSite(pos, b.type);
+        pos = Utils.unserializeRoomPosition(pos);
+        Utils.check("createConstructionSite", Game.rooms[pos.roomName].createConstructionSite(pos, b.type), []);
       });
     }
     let minBodyParts = [WORK, CARRY, MOVE];

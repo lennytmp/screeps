@@ -69,3 +69,12 @@ export function isCreep(a: any): a is Creep {
 export function unserializeRoomPosition(p: RoomPosition): RoomPosition {
   return new RoomPosition(p.x, p.y, p.roomName);
 }
+
+export function check(desc: string, ret: number, acceptable: number[]): number {
+  if(ret != OK) {
+    if(!_.includes(acceptable, ret)) {
+      console.log("Operation "+ desc +" failed: "+ ret);
+    }
+  }
+  return ret;
+}
