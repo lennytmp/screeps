@@ -58,7 +58,6 @@ export class EnergyContainer {
       }
       return;
     }
-    debugger;
     throw new Error("Either the consumer or provider of energy must be a creep");
   }
 
