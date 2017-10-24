@@ -23,7 +23,7 @@ export interface BuildRequest {
 export class BuilderManager extends Mngr.Manager {
 
   readonly role = 'builder';
-  priority: number = 20;
+  priority: number = 75;
 
   registerOnEnergyMarket(): void {
     for (let i in this.minions) {
