@@ -41,7 +41,7 @@ export function loop() {
     profiler.registerEvent("registering energy requests");
 
     // get spawn orders
-    let requests: Mngr.SpawnerQueueElement[] = []; //TODO: this should be heap.
+    let requests: Mngr.SpawnerQueueElement[] = [];
     _.forEach(managers, function(manager: Mngr.Manager) {
         requests = requests.concat(
           manager.getSpawnOrders(spawner.room.energyAvailable,
