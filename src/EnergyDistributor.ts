@@ -42,7 +42,7 @@ export class EnergyContainer {
     this.obj = a;
   }
 
-  getEnergy(c: EnergyEntity, amount?: number):void {
+  giveEnergy(c: EnergyEntity, amount?: number): void {
     if (Utils.isCreep(this.obj)) {
       if (amount) {
         this.obj.transfer(c, RESOURCE_ENERGY, amount);

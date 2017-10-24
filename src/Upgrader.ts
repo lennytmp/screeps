@@ -47,7 +47,7 @@ export class Upgrader {
       Ed.EnergyDistributor.registerRequest(
           creep, priority, creep.carryCapacity, function(e: Ed.EnergyContainer) {
         if (creep.pos.isNearTo(e.obj)) {
-          e.getEnergy(creep);
+          e.giveEnergy(creep);
         } else {
           creep.moveTo(e.obj);
           self.moveRequested = true;
