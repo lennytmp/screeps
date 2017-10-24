@@ -86,6 +86,10 @@ export class EnergyDistributor {
   }
 
   static registerOffer(provider: EnergyContainer, energy: number): void {
+    if(energy <= 0) {
+      // Gee, thanks.
+      return;
+    }
     EnergyDistributor.offers.push(<EnergyOffer>{
       "provider": provider,
       "energy": energy
@@ -101,27 +105,28 @@ export class EnergyDistributor {
       let spawnRequest = request.consumer instanceof StructureSpawn;
       for (let j in EnergyDistributor.offers) {
         let offer = EnergyDistributor.offers[j];
-        if (offer.energy > 0) {
-          if (spawnRequest && !(
-                offer.provider.obj instanceof StructureSpawn  ||
-                offer.provider.obj instanceof StructureExtension)) {
-            continue;
-          }
-          if (!Utils.isCreep(offer.provider.obj) &&
-              !Utils.isCreep(request.consumer) &&
-              !EnergyDistributor.isSpawnMatch(request, offer)) {
-            // TODO: two stuctures want to exchange energy. Should we call carriers?
-            continue;
-          }
-          // TODO: this should take into account distance to source
-          let charge: number = Math.min(offer.energy, request.energy);
-          request.energy -= charge;
-          offer.energy -= charge;
-          if (request.energy == 0) {
-            request.fulfilled = true;
-            if (request.clb) {
-              request.clb(offer.provider);
-            }
+        if(offer.energy <= 0) {
+          continue;
+        }
+        if (spawnRequest && !(
+              offer.provider.obj instanceof StructureSpawn  ||
+              offer.provider.obj instanceof StructureExtension)) {
+          continue;
+        }
+        if (!Utils.isCreep(offer.provider.obj) &&
+            !Utils.isCreep(request.consumer) &&
+            !EnergyDistributor.isSpawnMatch(request, offer)) {
+          // TODO: two stuctures want to exchange energy. Should we call carriers?
+          continue;
+        }
+        // TODO: this should take into account distance to source
+        let charge: number = Math.min(offer.energy, request.energy);
+        request.energy -= charge;
+        offer.energy -= charge;
+        if (request.energy == 0) {
+          request.fulfilled = true;
+          if (request.clb) {
+            request.clb(offer.provider);
           }
         }
       }
