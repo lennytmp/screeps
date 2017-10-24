@@ -15,7 +15,8 @@ export class UpgraderManager extends Mngr.Manager {
 
   registerOnEnergyMarket(): void {
     for (let i in this.upgraders) {
-      this.upgraders[i].registerRequest(this.priority);
+      // Energy requests for  upgraders are more important than building a new one
+      this.upgraders[i].registerRequest(this.priority - 1);
     }
   }
 
