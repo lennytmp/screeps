@@ -46,7 +46,7 @@ export class BuilderManager extends Mngr.Manager {
     if (!BuilderManager.existConstruction()) {
       if(Memory.builder.blocked_by_rcl.length > 0 && Memory.builder.desiredRCL <= Game.rooms[Memory.builder.blocked_by_rcl[0].positions[0].roomName].controller!.level) {
         Memory.builder.queue = [].concat(Memory.builder.blocked_by_rcl, Memory.builder.queue);
-        Memory.builder.queue.blocked_by_rcl = [];
+        Memory.builder.blocked_by_rcl = [];
       }
       if(Memory.builder.queue.length == 0) {
         return res;
