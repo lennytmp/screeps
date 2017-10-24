@@ -46,22 +46,22 @@ export function loop() {
         requests = requests.concat(
           manager.getSpawnOrders(spawner.room.energyAvailable,
                                  spawner.room.energyCapacityAvailable));
-        // copy requests to energy prioritisation
-        for (let i in requests) {
-          let request = requests[i];
-          let clb = function(_e: Ed.EnergyContainer): void {
-            if (Mngr.isSpawnRequest(request)) {
-              spawner.spawnCreep(request.parts, request.role + (""+Math.random()).substring(2));
-            } else {
-              spawner.renewCreep(request.creep);
-            }
-          }
-          Ed.EnergyDistributor.registerRequest(spawner,
-                                               request.priority,
-                                               request.price,
-                                               clb);
-        }
     });
+    // copy requests to energy prioritisation
+    for (let i in requests) {
+      let request = requests[i];
+      let clb = function(_e: Ed.EnergyContainer): void {
+        if (Mngr.isSpawnRequest(request)) {
+          spawner.spawnCreep(request.parts, request.role + (""+Math.random()).substring(2));
+        } else {
+          spawner.renewCreep(request.creep);
+        }
+      }
+      Ed.EnergyDistributor.registerRequest(spawner,
+                                           request.priority,
+                                           request.price,
+                                           clb);
+    }
     profiler.registerEvent("orders generation");
 
     Ed.EnergyDistributor.marketMatch();
