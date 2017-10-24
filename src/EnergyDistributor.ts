@@ -46,17 +46,19 @@ export class EnergyContainer {
     if (Utils.isCreep(this.obj)) {
       if (amount) {
         this.obj.transfer(c, RESOURCE_ENERGY, amount);
-        return;
+      } else {
+        this.obj.transfer(c, RESOURCE_ENERGY);
       }
-      this.obj.transfer(c, RESOURCE_ENERGY);
       return;
     } else if (Utils.isCreep(c)) {
       if (amount) {
         c.withdraw(this.obj, RESOURCE_ENERGY, amount);
-        return;
+      } else {
+        c.withdraw(this.obj, RESOURCE_ENERGY);
       }
-      c.withdraw(this.obj, RESOURCE_ENERGY);
+      return;
     }
+    debugger;
     throw new Error("Either the consumer or provider of energy must be a creep");
   }
 
