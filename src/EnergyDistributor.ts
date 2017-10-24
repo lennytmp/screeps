@@ -88,8 +88,8 @@ export class EnergyDistributor {
 
   static registerOffer(provider: EnergyContainer, energy: number): void {
     if(energy <= 0) {
-      // Gee, thanks.
-      return;
+      console.log(JSON.stringify(provider) + " offered no energy");
+      throw new Error("No energy offered for energy market");
     }
     EnergyDistributor.offers.push(<EnergyOffer>{
       "provider": provider,
@@ -101,12 +101,12 @@ export class EnergyDistributor {
     EnergyDistributor.requests.sort(function(a: EnergyRequest, b: EnergyRequest) {
       return a.priority - b.priority;
     });
-    for (let i in EnergyDistributor.requests) {
-      let request = EnergyDistributor.requests[i];
+    for (let request of EnergyDistributor.requests) {
       let spawnRequest = request.consumer instanceof StructureSpawn;
-      for (let j in EnergyDistributor.offers) {
-        let offer = EnergyDistributor.offers[j];
-        if(offer.energy <= 0) {
+      let bestOffer: EnergyOffer | null = null;
+      let bestDistance: number | null = null;
+      for (let offer of EnergyDistributor.offers) {
+        if (offer.energy <= request.energy) {
           continue;
         }
         if (spawnRequest && !(
@@ -114,24 +114,38 @@ export class EnergyDistributor {
               offer.provider.obj instanceof StructureExtension)) {
           continue;
         }
-        if (!Utils.isCreep(offer.provider.obj) &&
-            !Utils.isCreep(request.consumer) &&
-            !EnergyDistributor.isSpawnMatch(request, offer)) {
-          // TODO: two stuctures want to exchange energy. Should we call carriers?
+        let isSpawnMatch = EnergyDistributor.isSpawnMatch(request, offer);
+        if (!Utils.isCreep(offer.provider.obj) && !Utils.isCreep(request.consumer) && !isSpawnMatch) {
+          // Two stuctures want to exchange energy - API doesn't support that.
           continue;
         }
-        // TODO: this should take into account distance to source
-        let charge: number = Math.min(offer.energy, request.energy);
-        request.energy -= charge;
-        offer.energy -= charge;
-        if (request.energy == 0) {
-          request.fulfilled = true;
-          if (request.clb) {
-            request.clb(offer.provider);
-          }
+        if (isSpawnMatch) {
+          EnergyDistributor.transact(request, offer, false);
+          continue;
         }
+        let dist = request.consumer.pos.getRangeTo(offer.provider.obj.pos);
+        if (!bestDistance || bestDistance > dist) {
+          bestDistance = dist;
+          bestOffer = offer;
+        }
+        break;
+      }
+      if (bestOffer) {
+        EnergyDistributor.transact(request, bestOffer);
       }
     }
+  }
+
+  private static transact(request: EnergyRequest, offer: EnergyOffer, fulfill?: boolean) {
+      let charge: number = Math.min(offer.energy, request.energy);
+      request.energy -= charge;
+      offer.energy -= charge;
+      if (request.energy == 0 || fulfill) {
+        request.fulfilled = true;
+        if (request.clb) {
+          request.clb(offer.provider);
+        }
+      }
   }
 
   private static isSpawnMatch(r: EnergyRequest, o: EnergyOffer): boolean {
