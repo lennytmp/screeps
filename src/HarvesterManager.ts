@@ -1,3 +1,4 @@
+import * as Bmngr from "./BuilderManager";
 import * as Ed from "./EnergyDistributor";
 import * as Fmngr from "./FighterManager";
 import * as Harvester from "./Harvester";
@@ -184,10 +185,7 @@ export class HarvesterManager extends Mngr.Manager {
       console.log(src.id +": "+ JSON.stringify(res));
       if(res) {
         src.extensionPositions = res;
-        _.forEach(res, function(pos: RoomPosition) {
-          // TODO: don't create all at once, but give them to the BuilderManager to create them such that it's below the RCL limit.
-          room.createConstructionSite(pos.x, pos.y, STRUCTURE_EXTENSION);
-        });
+        Bmngr.BuilderManager.requestConstructions(res, STRUCTURE_EXTENSION);
       }
     });
   }

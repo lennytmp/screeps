@@ -4,8 +4,21 @@ import * as Fmngr from "./FighterManager";
 import * as Mngr from "./Manager";
 import * as Utils from "./Utils";
 
-const EXTENSIONS_AVAILABLE = {"2": 5};
+const EXTENSIONS_AVAILABLE: {[ rcl: number ]: number} = {
+  "2": 5,
+  "3": 10,
+  "4": 20,
+  "5": 30,
+  "6": 40,
+  "7": 50,
+  "8": 60,
+};
 const NATURAL_WALL = "wall"
+
+export interface BuildRequest {
+  positions: RoomPosition[],
+  type: string
+}
 
 export class BuilderManager extends Mngr.Manager {
 
@@ -21,31 +34,37 @@ export class BuilderManager extends Mngr.Manager {
     }
   }
 
-  commandMinions(): void {
-    var spawn = Game.spawns['Spawn1'];
-    // Create construction sites if needed
+  getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+    if (!Memory.builder) {
+      Memory.builder = {
+        "queue": [],
+        "blocked_by_rcl": [],
+      };
+    }
+    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.priority);
     if (!BuilderManager.existConstruction()) {
-      _.forEach(Game.rooms, function(room: Room) {
-        if (room.controller!.level == 2) {
-          // TODO: we'll probably decide on the same tick to build extensions as to build roads. We should prioritize the extensions. See the TODO in HarvesterManager before fixing this TODO.
-          if (!room.memory.roads_planned) {
-            BuilderManager.planRoadsFromSpawn(spawn);
-            room.memory.roads_planned = true;
-          }
+      if(Memory.builder.queue.length == 0) {
+        return res;
+      }
+      let b = Memory.builder.queue.shift();
+      let room = Game.rooms[b.positions[0].roomName];
+      if (b.type == STRUCTURE_EXTENSION) {
+        let max = EXTENSIONS_AVAILABLE[room.controller!.level];
+        let extensions = <StructureExtension[]>room.find(FIND_MY_STRUCTURES, {
+          filter: { structureType: STRUCTURE_EXTENSION }
+        });
+        if(b.positions.length + extensions.length > max) {
+          Memory.builder.blocked_by_rcl.push(b);
+          // We'll try the next queue entry next tick.
+          return res;
         }
-        return true;
+      }
+      _.forEach(b.positions, function(pos: RoomPosition) {
+        Game.rooms[pos.roomName].createConstructionSite(pos, b.type);
       });
     }
-    for (let i in this.minions) {
-      Builder.run(this.minions[i]);
-    }
-  }
-
-  getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
-    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.priority);
     let minBodyParts = [WORK, CARRY, MOVE];
-    if (!BuilderManager.existConstruction() ||
-        this.minions.length >= 3) {
+    if (this.minions.length >= 3) {
       return res;
     }
     let design = BuilderManager.getBodyParts(minBodyParts, maxEnergy);
@@ -58,22 +77,18 @@ export class BuilderManager extends Mngr.Manager {
     return res;
   }
 
-  static planExtensions(spawn: StructureSpawn, num: number): boolean {
-    let space = Utils.getArea(spawn.pos, 3);
-    let resPositions = spawn.room.lookForAtArea(LOOK_TERRAIN, space.minY, space.minX, space.maxY, space.maxX, true);
-    _.forEach(resPositions, function(resPos: LookAtResultWithPos) {
-        if (resPos.terrain == NATURAL_WALL) {
-          return true;
-        }
-        let pos = new RoomPosition(resPos.x, resPos.y, spawn.room.name);
-        if (!pos.inRangeTo(spawn, 1)) {
-          if (pos.createConstructionSite(STRUCTURE_EXTENSION) == OK) {
-            num--;
-          }
-        }
-        return num > 0;
+  commandMinions(): void {
+    for (let i in this.minions) {
+      Builder.run(this.minions[i]);
+    }
+  }
+
+  static requestConstructions(positions: RoomPosition[], type: string) {
+    console.log("Requested construction for "+ type +" at "+ positions.join('+'));
+    Memory.builder.queue.push(<BuildRequest>{
+      "positions": positions,
+      type: type
     });
-    return num == 0;
   }
 
   static planRoadsFromSpawn(spawn: StructureSpawn): void {
