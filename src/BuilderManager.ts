@@ -4,23 +4,23 @@ import * as Fmngr from "./FighterManager";
 import * as Mngr from "./Manager";
 import * as Utils from "./Utils";
 
-const EXTENSIONS_AVAILABLE: {[ rcl: number ]: number} = {
-  "2": 5,
-  "3": 10,
-  "4": 20,
-  "5": 30,
-  "6": 40,
-  "7": 50,
-  "8": 60,
-};
-const NATURAL_WALL = "wall"
-
 export interface BuildRequest {
   positions: RoomPosition[],
   type: string
 }
 
 export class BuilderManager extends Mngr.Manager {
+
+  static readonly EXTENSIONS_AVAILABLE: {[ rcl: number ]: number} = {
+    "1": 0,
+    "2": 5,
+    "3": 10,
+    "4": 20,
+    "5": 30,
+    "6": 40,
+    "7": 50,
+    "8": 60,
+  };
 
   readonly role = 'builder';
   priority: number = 75;
@@ -120,13 +120,17 @@ export class BuilderManager extends Mngr.Manager {
     return false;
   }
 
-  static getMaxRoomExt(r: Room) {
-    return EXTENSIONS_AVAILABLE[r.controller!.level];
+  static getMaxRoomExt(r: Room):number {
+    return BuilderManager.EXTENSIONS_AVAILABLE[r.controller!.level];
   }
 
   static getRoomNumExt(r: Room) {
-    return r.find(FIND_MY_STRUCTURES, {
+    let existing = r.find(FIND_MY_STRUCTURES, {
       filter: { structureType: STRUCTURE_EXTENSION }
     }).length;
+    let building = r.find(FIND_CONSTRUCTION_SITES, {
+      filter: { structureType: STRUCTURE_EXTENSION }
+    }).length;
+    return existing + building;
   }
 }

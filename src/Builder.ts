@@ -23,12 +23,8 @@ export class Builder {
     if (creep.memory.working) {
       let targets = <ConstructionSite[]>creep.room.find(FIND_CONSTRUCTION_SITES);
       if (targets.length && !upgrade) {
-        let err = creep.build(targets[0]);
-        switch (err) {
-          case ERR_NOT_IN_RANGE:
+        if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
             creep.moveTo(targets[0]);
-          case ERR_RCL_NOT_ENOUGH:
-            Memory.builder.blocked = true;
         }
       } else {
         if (creep.room.controller &&
