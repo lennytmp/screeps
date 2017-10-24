@@ -220,7 +220,7 @@ export class HarvesterManager extends Mngr.Manager {
         }
         let res = this._tryExtensionSpot(room, src, costs, minerIdx+1);
         if (res) {
-          return <RoomPosition[]>([new RoomPosition(x, y, room.name)]).concat(res);
+          return [new RoomPosition(x, y, room.name)].concat(res);
         }
         costs.set(x, y, 0);
       }
