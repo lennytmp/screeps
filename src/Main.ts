@@ -15,6 +15,9 @@ var profile = false;
 export function loop() {
   try {
     let profiler = new prf.Profiler();
+    if (Memory.previousTick+1 < Game.time) {
+      console.log("Previous "+ (Game.time-Memory.previousTick) +" tick(s) were interrupted!");
+    }
     let managers: { [name: string]: Mngr.Manager; } = {
       "harvester": new Hmngr.HarvesterManager(),
       "carrier": new Cmngr.CarrierManager(),
@@ -72,6 +75,7 @@ export function loop() {
     });
     profiler.registerEvent("commanding minions");
 
+    Memory.previousTick = Game.time;
 
     if (profile && profiler.getDuration() > 10) {
       console.log(profiler.getOutput());
