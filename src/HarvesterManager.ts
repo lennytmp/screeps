@@ -195,8 +195,8 @@ export class HarvesterManager extends Mngr.Manager {
   _tryExtensionSpot(room: Room, src: SourceDefinition, costs: CostMatrix, minerIdx: number): RoomPosition[] | false {
     let mp = Utils.unserializeRoomPosition(src.miningPositions[minerIdx]);
     // TODO: use Utils.getArea
-    for(var x = Math.max(0, mp.x-1); Math.min(49, mp.x+1) > x; x++) {
-      for(var y = Math.max(0, mp.y-1); Math.min(49, mp.y+1) > y; y++) {
+    for(var x = Math.max(0, mp.x-1); Math.min(49, mp.x+1) >= x; x++) {
+      for(var y = Math.max(0, mp.y-1); Math.min(49, mp.y+1) >= y; y++) {
         if (costs.get(x, y) == 255) {
           continue
         }
