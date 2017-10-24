@@ -87,6 +87,10 @@ export class HarvesterManager extends Mngr.Manager {
     if(!Memory.harvester.sources) {
       Memory.harvester.sources = this.calcSources(room);
     }
+    if(Memory.harvester.hasExtensionsPlanned && !Memory.harvester.hasRoadsPlanned && room.controller && room.controller.level >= 2) {
+      this.calcRoads(room, Memory.harvester.sources);
+      Memory.harvester.hasRoadsPlanned = true;
+    }
     if(!Memory.harvester.hasExtensionsPlanned && room.controller && room.controller.level >= 2) {
       this.calcExtensions(room, Memory.harvester.sources);
       Memory.harvester.hasExtensionsPlanned = true;
@@ -224,6 +228,43 @@ export class HarvesterManager extends Mngr.Manager {
       }
     }
     return false;
+  }
+
+  calcRoads(room: Room, srcs: SourceDefinition[]) {
+    let self = this;
+    let spawn = Game.spawns['Spawn1'];
+    _.forEach(srcs, function(src: SourceDefinition) {
+      let closestDistance: number = 0;
+      let closestPosition: RoomPosition | null = null;
+      let closestPath: PathStep[] = [];
+      _.forEach(src.extensionPositions!, function(pos: RoomPosition) {
+        pos = Utils.unserializeRoomPosition(pos);
+        let path = room.findPath(spawn.pos, pos, {
+          "ignoreCreeps": true
+        });
+        if(!closestPosition || closestDistance > path.length) {
+          closestDistance = path.length;
+          closestPosition = pos;
+          closestPath = path;
+        }
+      });
+      let mainRoad = Utils.pathToRoomPositions(room, closestPath);
+      mainRoad.pop(); // Don't build a road under the extension
+      console.log(src.id +": closest="+ JSON.stringify([closestDistance, closestPosition, mainRoad]));
+      Bmngr.BuilderManager.requestConstructions(mainRoad, STRUCTURE_ROAD);
+      let end = mainRoad[mainRoad.length-1];
+      _.forEach(src.extensionPositions!, function(pos: RoomPosition) {
+        pos = Utils.unserializeRoomPosition(pos);
+        let path = room.findPath(end, pos, {
+          "ignoreCreeps": true
+        });
+        if(path.length > 1) {
+          let road = Utils.pathToRoomPositions(room, path);
+          road.pop(); // Don't build a road under the extension
+          Bmngr.BuilderManager.requestConstructions(road, STRUCTURE_ROAD);
+        }
+      });
+    });
   }
 
   static getMyConsumer(creep: Creep): Creep | Structure {

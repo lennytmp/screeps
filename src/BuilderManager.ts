@@ -99,21 +99,6 @@ export class BuilderManager extends Mngr.Manager {
     });
   }
 
-  static planRoadsFromSpawn(spawn: StructureSpawn): void {
-    let sources = <Source[]>spawn.room.find(FIND_SOURCES);
-    for (let j = 0; j < sources.length; j++) {
-      if (!Fmngr.FighterManager.isSafePos(sources[j].pos)) {
-        continue;
-      }
-      let path = spawn.room.findPath(spawn.pos, sources[j].pos, {
-        ignoreCreeps: true
-      });
-      for (let i = 0; i < path.length; i++) {
-        spawn.room.createConstructionSite(path[i].x, path[i].y, STRUCTURE_ROAD);
-      }
-    }
-  }
-
   static existConstruction(): boolean {
     let targets = Game.constructionSites;
     for (var key in targets) {

@@ -70,6 +70,14 @@ export function unserializeRoomPosition(p: RoomPosition): RoomPosition {
   return new RoomPosition(p.x, p.y, p.roomName);
 }
 
+export function pathToRoomPositions(room: Room, path: PathStep[]): RoomPosition[] {
+  let res: RoomPosition[] = [];
+  for (let p of path) {
+    res.push(new RoomPosition(p.x, p.y, room.name));
+  }
+  return res;
+}
+
 export function check(desc: string, ret: number, acceptable: number[]): number {
   if(ret != OK) {
     if(!_.includes(acceptable, ret)) {
