@@ -52,12 +52,13 @@ export class BuilderManager extends Mngr.Manager {
     BuilderManager.planConstructionSites();
 
     let minBodyParts = [WORK, CARRY, MOVE];
+    let priority = this.priority;
     if (this.minions.length >= 4) {
-      return res;
+      priority += 100;
     }
     let design = BuilderManager.getBodyParts(minBodyParts, maxEnergy);
     res.push({
-      "priority": this.priority,
+      "priority": priority,
       "parts": design.body,
       "role": this.role,
       "price": design.price
