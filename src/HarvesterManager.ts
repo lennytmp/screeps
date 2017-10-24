@@ -204,7 +204,7 @@ export class HarvesterManager extends Mngr.Manager {
       });
       let res = self._tryExtensionSpot(room, src, costs, 0);
       console.log(src.id +": "+ JSON.stringify(res));
-      if(res) {
+      if (res) {
         src.extensionPositions = res;
         Bmngr.BuilderManager.requestConstructions(res, STRUCTURE_EXTENSION);
       }

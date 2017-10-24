@@ -24,7 +24,7 @@ export class BuilderManager extends Mngr.Manager {
 
   readonly role = 'builder';
   priority: number = 75;
-  builders: B.Builder[] = []; 
+  builders: B.Builder[] = [];
 
   registerMinion(creep: Creep) {
     this.builders.push(new B.Builder(creep));
@@ -86,12 +86,15 @@ export class BuilderManager extends Mngr.Manager {
       Memory.builder.queue.blocked_by_rcl = [];
     }
     let b = Memory.builder.queue.shift();
+    if (!b) {
+      return;
+    }
     console.log("BuilderManager: gonna work on "+ JSON.stringify(b));
     let room = Game.rooms[b.positions[0].roomName];
     if (b.type == STRUCTURE_EXTENSION) {
       let max = BuilderManager.getMaxRoomExt(room);
       let numExt = BuilderManager.getRoomNumExt(room);
-      if(b.positions.length + numExt > max) {
+      if (b.positions.length + numExt > max) {
         Memory.builder.blocked_by_rcl.push(b);
         Memory.builder.desiredRCL = room.controller!.level + 1
         // We'll try the next queue entry next tick.

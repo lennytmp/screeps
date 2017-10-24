@@ -105,10 +105,10 @@ export class EnergyDistributor {
       let spawnRequest = request.consumer instanceof StructureSpawn;
       let bestOffer: EnergyOffer | null = null;
       let bestDistance: number | null = null;
+      let bestRatio: number = 0;
       for (let offer of EnergyDistributor.offers) {
-        if (offer.energy <= request.energy) {
-          continue;
-        }
+
+        /* Spawn requests related logic */
         if (spawnRequest && !(
               offer.provider.obj instanceof StructureSpawn  ||
               offer.provider.obj instanceof StructureExtension)) {
@@ -123,12 +123,18 @@ export class EnergyDistributor {
           EnergyDistributor.transact(request, offer, false);
           continue;
         }
+
+        /* Normal energy requests */
+        if (offer.energy <= request.energy) {
+          continue;
+        }
         let dist = request.consumer.pos.getRangeTo(offer.provider.obj.pos);
-        if (!bestDistance || bestDistance > dist) {
+        let ratio = Math.max(offer.energy / request.energy, 1.0);
+        if (!bestDistance || bestRatio < ratio || bestDistance > dist) {
           bestDistance = dist;
           bestOffer = offer;
+          bestRatio = ratio;
         }
-        break;
       }
       if (bestOffer) {
         EnergyDistributor.transact(request, bestOffer);

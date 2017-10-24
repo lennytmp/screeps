@@ -1,4 +1,5 @@
 import * as Ed from "./EnergyDistributor";
+import * as Utils from "./Utils";
 
 export class Builder {
 
@@ -39,8 +40,9 @@ export class Builder {
     let creep = this.creep;
     if (!creep.memory.working) {
       var self = this;
+      let creepCarry = creep.carry![RESOURCE_ENERGY] || 0;
       Ed.EnergyDistributor.registerRequest(
-          creep, priority, creep.carryCapacity, function(e: Ed.EnergyContainer) {
+          creep, priority, creep.carryCapacity - creepCarry, function(e: Ed.EnergyContainer) {
         if (creep.pos.isNearTo(e.obj)) {
           e.giveEnergy(creep);
         } else {
