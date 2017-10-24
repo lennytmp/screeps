@@ -29,7 +29,7 @@ export class BuilderManager extends Mngr.Manager {
     for (let i in this.minions) {
       let minion = this.minions[i];
       if (minion.carry.energy == 0) {
-        Ed.EnergyDistributor.registerRequest(minion, this.priority, minion.carryCapacity);
+        // Ed.EnergyDistributor.registerRequest(minion, this.priority, minion.carryCapacity);
       }
     }
   }
