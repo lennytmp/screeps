@@ -1,4 +1,16 @@
 export function run(creep: Creep, src: string, dst: Structure): void {
+  if (creep.ticksToLive < 300 || creep.memory.reviving) {
+    // TODO: we should fill him all the way up
+    if(creep.ticksToLive < 1000) {
+      creep.memory.reviving = true;
+      creep.moveTo(Game.spawns['Spawn1']);
+      return;
+    }
+
+    creep.memory.reviving = false;
+    // Go back to his miningPosition and let him fill up his extension.
+    creep.memory.harvesting = true;
+  }
   if (creep.memory.harvesting && creep.carry.energy == creep.carryCapacity) {
     creep.memory.harvesting = false;
   } else if (!creep.memory.harvesting && creep.carry.energy == 0) {
