@@ -193,7 +193,7 @@ export class HarvesterManager extends Mngr.Manager {
   }
 
   _tryExtensionSpot(room: Room, src: SourceDefinition, costs: CostMatrix, minerIdx: number): RoomPosition[] | false {
-    let mp = src.miningPositions[minerIdx];
+    let mp = Utils.unserializeRoomPosition(src.miningPositions[minerIdx]);
     // TODO: use Utils.getArea
     for(var x = Math.max(0, mp.x-1); Math.min(49, mp.x+1) > x; x++) {
       for(var y = Math.max(0, mp.y-1); Math.min(49, mp.y+1) > y; y++) {
@@ -203,7 +203,7 @@ export class HarvesterManager extends Mngr.Manager {
         costs.set(x, y, 255);
         if (src.miningPositions.length-1 == minerIdx) {
           for(var i = 0; src.miningPositions.length > i; i++) {
-            let omp = src.miningPositions[i];
+            let omp = Utils.unserializeRoomPosition(src.miningPositions[i]);
             let path = room.findPath(Game.spawns['Spawn1'].pos, omp, {
               "ignoreCreeps": true,
               "ignoreRoads": true,

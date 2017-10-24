@@ -65,3 +65,7 @@ export function getBodyArray(bodyStruct: BodyPartDefinition[]): string[] {
 export function isCreep(a: any): a is Creep {
   return (<Creep>a).body !== undefined && (<Creep>a).withdraw !== undefined;
 }
+
+export function unserializeRoomPosition(p: RoomPosition): RoomPosition {
+  return new RoomPosition(p.x, p.y, p.roomName);
+}
