@@ -86,3 +86,7 @@ export function check(desc: string, ret: number, acceptable: number[]): number {
   }
   return ret;
 }
+
+export function posToString(p: RoomPosition): string {
+  return p.x +","+ p.y +" ("+ p.roomName +")"
+}

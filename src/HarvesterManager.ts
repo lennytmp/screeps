@@ -39,8 +39,19 @@ export class HarvesterManager extends Mngr.Manager {
 
   commandMinions(): void {
     let needs: { [id: string]: number; } = {};
+    let mp2ext: { [mp: string]: Structure; } = {};
     _.forEach(Memory.harvester.sources, function(s: SourceDefinition) {
       needs[s.id] = s.miningPositions.length;
+      if (s.extensionPositions) {
+        for (let i in s.extensionPositions) {
+          let mp = s.miningPositions[i];
+          let ep = s.extensionPositions[i];
+          let structures = <Structure[]>Game.rooms[mp.roomName].lookForAt(LOOK_STRUCTURES, Utils.unserializeRoomPosition(ep));
+          if (structures.length > 0) {
+            mp2ext[Utils.posToString(mp)] = structures[0];
+          }
+        }
+      }
     });
     _.forEach(this.minions, function(minion: Creep) {
       if(minion.memory.source) {
@@ -58,11 +69,11 @@ export class HarvesterManager extends Mngr.Manager {
           return true;
         });
       }
-      let dsts = Utils.getAdjacentStructures(minion.pos, STRUCTURE_EXTENSION, 1);
-      if (dsts.length == 0) {
-        dsts = [Game.spawns['Spawn1']];
+      let dst = mp2ext[Utils.posToString(minion.pos)];
+      if(!dst) {
+        dst = Game.spawns['Spawn1'];
       }
-      Harvester.run(minion, minion.memory.source, dsts[0]);
+      Harvester.run(minion, minion.memory.source, dst);
     });
   }
 
