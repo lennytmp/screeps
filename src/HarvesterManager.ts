@@ -53,7 +53,10 @@ export class HarvesterManager extends Mngr.Manager {
           if (structures.length > 0) {
             for (let struct of structures) {
               if (Ed.EnergyContainer.isEnergyContainerSource(struct)) {
-                mp2ext[Utils.posToString(mp)] = struct;
+                let e = new Ed.EnergyContainer(struct);
+                if (e.energy < e.energyCapacity) {
+                  mp2ext[Utils.posToString(mp)] = struct;
+                }
               }
             }
           }
