@@ -44,16 +44,17 @@ export abstract class Manager {
 
   getRenewRequests(priority: number): RenewRequest[] {
     let requests: RenewRequest[] = [];
-    _.forEach(this.minions, function(minion: Creep) {
+    for (let minion of this.minions) {
       if (minion.ticksToLive < 1000 &&
-          Utils.isNearStructure(minion.pos, STRUCTURE_SPAWN, 1)) {
+          Utils.isNearStructure(minion.pos, STRUCTURE_SPAWN, 1) &&
+          Utils.shouldBeRenewed(minion)) {
         requests.push(<RenewRequest>{
           "priority": priority,
           "creep": minion,
           "price": Utils.getCreepPrice(minion) / minion.body.length / RENEW_COEF
         });
       }
-    });
+    }
     return requests;
   }
 

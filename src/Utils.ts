@@ -7,6 +7,7 @@ type Rect = {
 
 const ROOM_WIDTH = 50;
 const ROOM_HEIGHT = 50;
+const RENEWAL_COEF = 2;
 
 export function getArea(pos: RoomPosition, dist: number): Rect {
   return {
@@ -101,5 +102,9 @@ export function getBodyArray(bodyStruct: BodyPartDefinition[]): string[] {
     result.push(bodyStruct[i].type);
   }
   return result;
+}
+
+export function shouldBeRenewed(creep: Creep): boolean {
+  return creep.room.energyCapacityAvailable < getCreepPrice(creep) * RENEWAL_COEF;
 }
 
