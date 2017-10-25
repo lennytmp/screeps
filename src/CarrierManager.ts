@@ -74,13 +74,12 @@ export class CarrierManager extends Mngr.Manager {
     }
   }
 
-  static requestTransfer(from: Ed.EnergyContainer, to: Ed.EnergyContainer, energy: number): boolean {
+  static requestTransfer(from: Ed.EnergyContainer, energy: number): boolean {
     if (Utils.isCreep(from.obj) && from.obj.name.startsWith("carrier")) {
       return false;
     }
     CarrierManager.workQueue.push(<DeliveryRequest>{
       "from": from,
-      "to": to,
       "energy": energy
     });
     CarrierManager.freeWorkers--;

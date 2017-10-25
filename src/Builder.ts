@@ -45,11 +45,11 @@ export class Builder {
           new Ed.EnergyContainer(creep),
           priority,
           creep.carryCapacity - creepCarry,
-          function(e: Ed.EnergyContainer) {
-            if (creep.pos.isNearTo(e.obj)) {
-              e.giveEnergy(new Ed.EnergyContainer(creep));
+          function(c: Ed.EnergyContainer, e: number) {
+            if (creep.pos.isNearTo(c.obj)) {
+              c.giveEnergy(new Ed.EnergyContainer(creep), e);
             } else {
-              creep.moveTo(e.obj);
+              creep.moveTo(c.obj);
               self.moveRequested = true;
             }
       });

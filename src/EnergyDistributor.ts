@@ -6,12 +6,13 @@ type EnergyRequest = {
   energy: number,
   consumer: EnergyContainer,
   fulfilled: boolean,
-  clb: (e: EnergyContainer) => void
+  clb?: (c: EnergyContainer, e: number) => void
 }
 
 type EnergyOffer = {
   provider: EnergyContainer,
-  energy: number
+  energy: number,
+  clb?: (c: EnergyContainer, e: number) => void
 }
 
 export type EnergyContainerSource = StructureSpawn | StructureExtension | StructureContainer | Creep;
@@ -101,7 +102,7 @@ export class EnergyDistributor {
   static registerRequest(consumer: EnergyContainer,
                          priority: number,
                          energy: number,
-                         clb?: (e: EnergyContainer) => void): void {
+                         clb?: (c: EnergyContainer, e: number) => void): void {
     EnergyDistributor.requests.push(<EnergyRequest>{
       "consumer": consumer,
       "priority": priority,
@@ -111,14 +112,17 @@ export class EnergyDistributor {
     });
   }
 
-  static registerOffer(provider: EnergyContainer, energy: number): void {
+  static registerOffer(provider: EnergyContainer,
+                       energy: number,
+                       clb?: (c: EnergyContainer, e: number) => void): void {
     if(energy <= 0) {
       console.log(JSON.stringify(provider) + " offered no energy");
       throw new Error("No energy offered for energy market");
     }
     EnergyDistributor.offers.push(<EnergyOffer>{
       "provider": provider,
-      "energy": energy
+      "energy": energy,
+      "clb": clb
     });
   }
 
@@ -137,7 +141,7 @@ export class EnergyDistributor {
       let bestOffer: EnergyOffer | null;
       while (request.energy > 0 && (bestOffer = EnergyDistributor.findBestOffer(request))) {
         let charge: number = Math.min(bestOffer.energy, request.energy);
-        let ok = C.CarrierManager.requestTransfer(bestOffer.provider, request.consumer, charge);
+        let ok = C.CarrierManager.requestTransfer(bestOffer.provider, charge);
         if (ok) {
           EnergyDistributor.transact(request, bestOffer, spawnRequest, false);
         }
@@ -185,17 +189,13 @@ export class EnergyDistributor {
       let charge: number = Math.min(offer.energy, request.energy);
       request.energy -= charge;
       offer.energy -= charge;
-      if (fulfillNever && (
-            Utils.isCreep(offer.provider.obj) ||
-            Utils.isCreep(request.consumer))) {
-        if (offer.provider.giveEnergy(request.consumer, charge) == OK) {
-          fulfillNever = false;
-        }
+      if (offer.clb) {
+        offer.clb(request.consumer, charge);
       }
       if (!fulfillNever && (request.energy == 0 || fulfillAlways)) {
         request.fulfilled = true;
         if (request.clb) {
-          request.clb(offer.provider);
+          request.clb(offer.provider, charge);
         }
       }
   }
