@@ -50,19 +50,11 @@ export abstract class Manager {
         requests.push(<RenewRequest>{
           "priority": priority,
           "creep": minion,
-          "price": Manager.getPrice(Utils.getBodyArray(minion.body)) / minion.body.length / RENEW_COEF
+          "price": Utils.getCreepPrice(minion) / minion.body.length / RENEW_COEF
         });
       }
     });
     return requests;
-  }
-
-  static getPrice(bodyParts: string[]) {
-    let price = 0;
-    for (let i = 0; i < bodyParts.length; i++) {
-      price += BODYPART_COST[bodyParts[i]];
-    }
-    return price;
   }
 
   static getBodyParts(priorities: string[], energy: number): BodyDesign {

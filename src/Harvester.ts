@@ -1,7 +1,12 @@
+import * as Utils from "./Utils";
+
+const RENEWAL_COEF = 2;
+
 export function run(creep: Creep, src: string, dst: Structure): void {
-  if (creep.ticksToLive < 300 || creep.memory.reviving) {
+  if (creep.ticksToLive < 300 || creep.memory.reviving &&
+      (creep.room.energyCapacityAvailable > Utils.getCreepPrice(creep) * RENEWAL_COEF)) {
     // TODO: we should fill him all the way up
-    if(creep.ticksToLive < 1000) {
+    if (creep.ticksToLive < 1000) {
       creep.memory.reviving = true;
       creep.moveTo(Game.spawns['Spawn1']);
       return;

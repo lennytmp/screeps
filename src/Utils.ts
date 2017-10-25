@@ -54,14 +54,6 @@ export function getAdjacentStructures(pos: RoomPosition, structureType: string, 
   return ret;
 }
 
-export function getBodyArray(bodyStruct: BodyPartDefinition[]): string[] {
-  let result: string[] = [];
-  for (let i in bodyStruct) {
-    result.push(bodyStruct[i].type);
-  }
-  return result;
-}
-
 export function isCreep(a: any): a is Creep {
   return (<Creep>a).body !== undefined && (<Creep>a).withdraw !== undefined;
 }
@@ -90,3 +82,24 @@ export function check(desc: string, ret: number, acceptable: number[]): number {
 export function posToString(p: RoomPosition): string {
   return p.x +","+ p.y +" ("+ p.roomName +")"
 }
+
+export function getCreepPrice(creep: Creep) {
+  return getBodyPrice(getBodyArray(creep.body));
+}
+
+export function getBodyPrice(bodyParts: string[]) {
+  let price = 0;
+  for (let i = 0; i < bodyParts.length; i++) {
+    price += BODYPART_COST[bodyParts[i]];
+  }
+  return price;
+}
+
+export function getBodyArray(bodyStruct: BodyPartDefinition[]): string[] {
+  let result: string[] = [];
+  for (let i in bodyStruct) {
+    result.push(bodyStruct[i].type);
+  }
+  return result;
+}
+
