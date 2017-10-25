@@ -21,6 +21,9 @@ export class Carrier {
       return;
     }
     let creep = this.creep;
+    if (Utils.isCreep(target.obj) && target.obj.name.startsWith("harvester")) {
+      e = Math.max(target.obj.carry[RESOURCE_ENERGY]!, e);
+    }
     if (target.giveEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
       creep.moveTo(target.obj);
     }
@@ -35,9 +38,6 @@ export class Carrier {
           new Ed.EnergyContainer(creep),
           creepCarry,
           function(c: Ed.EnergyContainer, e: number) {
-            if (Utils.isCreep(c.obj) && c.obj.name.startsWith("harvester")) {
-              e = c.obj.carry[RESOURCE_ENERGY]!;
-            }
             if (c.getEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
               creep.moveTo(c.obj);
               self.moveRequested = true;
