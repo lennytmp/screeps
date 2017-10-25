@@ -1,19 +1,8 @@
-import * as Builder from "./Builder";
+import * as B from "./Builder";
 import * as Ed from "./EnergyDistributor";
 import * as Fmngr from "./FighterManager";
 import * as Mngr from "./Manager";
 import * as Utils from "./Utils";
-
-const EXTENSIONS_AVAILABLE: {[ rcl: number ]: number} = {
-  "2": 5,
-  "3": 10,
-  "4": 20,
-  "5": 30,
-  "6": 40,
-  "7": 50,
-  "8": 60,
-};
-const NATURAL_WALL = "wall"
 
 export interface BuildRequest {
   positions: RoomPosition[],
@@ -22,15 +11,30 @@ export interface BuildRequest {
 
 export class BuilderManager extends Mngr.Manager {
 
+  static readonly EXTENSIONS_AVAILABLE: {[ rcl: number ]: number} = {
+    "1": 0,
+    "2": 5,
+    "3": 10,
+    "4": 20,
+    "5": 30,
+    "6": 40,
+    "7": 50,
+    "8": 60,
+  };
+
   readonly role = 'builder';
   priority: number = 75;
+  builders: B.Builder[] = [];
+
+  registerMinion(creep: Creep) {
+    this.builders.push(new B.Builder(creep));
+    this.minions.push(creep);
+  }
 
   registerOnEnergyMarket(): void {
-    for (let i in this.minions) {
-      let minion = this.minions[i];
-      if (minion.carry.energy == 0) {
-        // Ed.EnergyDistributor.registerRequest(minion, this.priority, minion.carryCapacity);
-      }
+    for (let i in this.builders) {
+      // Energy requests for  upgraders are more important than building a new one
+      this.builders[i].registerRequest(this.priority - 1);
     }
   }
 
@@ -40,44 +44,21 @@ export class BuilderManager extends Mngr.Manager {
         "queue": [],
         "blocked_by_rcl": [],
         "desiredRCL": 0,
+        "blocked": false
       };
     }
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.priority);
-    if (!BuilderManager.existConstruction()) {
-      if(Memory.builder.blocked_by_rcl.length > 0 && Memory.builder.desiredRCL <= Game.rooms[Memory.builder.blocked_by_rcl[0].positions[0].roomName].controller!.level) {
-        Memory.builder.queue = [].concat(Memory.builder.blocked_by_rcl, Memory.builder.queue);
-        Memory.builder.blocked_by_rcl = [];
-      }
-      if(Memory.builder.queue.length == 0) {
-        return res;
-      }
-      let b = Memory.builder.queue.shift();
-      console.log("BuilderManager: gonna work on "+ JSON.stringify(b));
-      let room = Game.rooms[b.positions[0].roomName];
-      if (b.type == STRUCTURE_EXTENSION) {
-        let max = EXTENSIONS_AVAILABLE[room.controller!.level];
-        let extensions = <StructureExtension[]>room.find(FIND_MY_STRUCTURES, {
-          filter: { structureType: STRUCTURE_EXTENSION }
-        });
-        if(b.positions.length + extensions.length > max) {
-          Memory.builder.blocked_by_rcl.push(b);
-          Memory.builder.desiredRCL = room.controller!.level + 1
-          // We'll try the next queue entry next tick.
-          return res;
-        }
-      }
-      _.forEach(b.positions, function(pos: RoomPosition) {
-        pos = Utils.unserializeRoomPosition(pos);
-        Utils.check("createConstructionSite", Game.rooms[pos.roomName].createConstructionSite(pos, b.type), []);
-      });
-    }
+
+    BuilderManager.planConstructionSites();
+
     let minBodyParts = [WORK, CARRY, MOVE];
-    if (this.minions.length >= 3) {
-      return res;
+    let priority = this.priority;
+    if (this.minions.length >= 4) {
+      priority += 100;
     }
     let design = BuilderManager.getBodyParts(minBodyParts, maxEnergy);
     res.push({
-      "priority": this.priority,
+      "priority": priority,
       "parts": design.body,
       "role": this.role,
       "price": design.price
@@ -86,9 +67,45 @@ export class BuilderManager extends Mngr.Manager {
   }
 
   commandMinions(): void {
-    for (let i in this.minions) {
-      Builder.run(this.minions[i]);
+    let room = Game.spawns['Spawn1'].room;
+    let max = BuilderManager.getMaxRoomExt(room);
+    let numExt = BuilderManager.getRoomNumExt(room);
+    Memory.builder.blocked = numExt > max;
+    for (let i in this.builders) {
+      this.builders[i].run(Memory.builder.blocked);
     }
+  }
+
+  static planConstructionSites(): void {
+    if (BuilderManager.existConstruction()) {
+      return;
+    }
+    if (Memory.builder.blocked_by_rcl.length > 0 &&
+       Memory.builder.desiredRCL <= Game.rooms[Memory.builder.blocked_by_rcl[0].positions[0].roomName].controller!.level) {
+
+      Memory.builder.queue = [].concat(Memory.builder.blocked_by_rcl, Memory.builder.queue);
+      Memory.builder.blocked_by_rcl = [];
+    }
+    let b = Memory.builder.queue.shift();
+    if (!b) {
+      return;
+    }
+    console.log("BuilderManager: gonna work on "+ JSON.stringify(b));
+    let room = Game.rooms[b.positions[0].roomName];
+    if (b.type == STRUCTURE_EXTENSION) {
+      let max = BuilderManager.getMaxRoomExt(room);
+      let numExt = BuilderManager.getRoomNumExt(room);
+      if (b.positions.length + numExt > max) {
+        Memory.builder.blocked_by_rcl.push(b);
+        Memory.builder.desiredRCL = room.controller!.level + 1
+        // We'll try the next queue entry next tick.
+        return;
+      }
+    }
+    _.forEach(b.positions, function(pos: RoomPosition) {
+      pos = Utils.unserializeRoomPosition(pos);
+      Utils.check("createConstructionSite", Game.rooms[pos.roomName].createConstructionSite(pos, b.type), []);
+    });
   }
 
   static requestConstructions(positions: RoomPosition[], type: string) {
@@ -105,5 +122,19 @@ export class BuilderManager extends Mngr.Manager {
       return true;
     }
     return false;
+  }
+
+  static getMaxRoomExt(r: Room):number {
+    return BuilderManager.EXTENSIONS_AVAILABLE[r.controller!.level];
+  }
+
+  static getRoomNumExt(r: Room) {
+    let existing = r.find(FIND_MY_STRUCTURES, {
+      filter: { structureType: STRUCTURE_EXTENSION }
+    }).length;
+    let building = r.find(FIND_CONSTRUCTION_SITES, {
+      filter: { structureType: STRUCTURE_EXTENSION }
+    }).length;
+    return existing + building;
   }
 }

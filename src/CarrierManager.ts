@@ -17,7 +17,7 @@ export class CarrierManager extends Mngr.Manager {
       }
     });
     _.forEach(this.minions, function(minion: Creep) {
-      if(!minion.memory.src) {
+      if(!minion.memory.src || !Game.getObjectById(minion.memory.src)) {
         _.forEach(needs, function(need: number, src: string): boolean {
           if(need > 0) {
             minion.memory.src = src;

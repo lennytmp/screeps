@@ -1,22 +1,55 @@
-export function run(creep: Creep): void {
-  if (creep.memory.building && creep.carry.energy == 0) {
-    creep.memory.building = false;
+import * as Ed from "./EnergyDistributor";
+import * as Utils from "./Utils";
+
+export class Builder {
+
+  moveRequested = false;
+  creep: Creep;
+
+  constructor(creep: Creep) {
+    this.creep = creep;
+    if(creep.memory.working && creep.carry.energy == 0) {
+      creep.memory.working = false;
+    }
+    if (!creep.memory.working && creep.carry.energy == creep.carryCapacity) {
+      creep.memory.working = true;
+    }
   }
-  if (!creep.memory.building && creep.carry.energy == creep.carryCapacity) {
-    creep.memory.building = true;
-  }
-  if (creep.memory.building) {
-    let targets = <ConstructionSite[]>creep.room.find(FIND_CONSTRUCTION_SITES);
-    if (targets.length) {
-      if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(targets[0]);
+
+  run(upgrade: boolean): void {
+    if (this.moveRequested) {
+      return;
+    }
+    let creep = this.creep;
+    if (creep.memory.working) {
+      let targets = <ConstructionSite[]>creep.room.find(FIND_CONSTRUCTION_SITES);
+      if (targets.length && !upgrade) {
+        if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(targets[0]);
+        }
+      } else {
+        if (creep.room.controller &&
+            creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(creep.room.controller);
+        }
       }
     }
-  } else {
-    var spawner = Game.spawns['Spawn1'];
-    if (creep.withdraw(spawner, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(spawner);
+  }
+
+  registerRequest(priority: number): void {
+    let creep = this.creep;
+    if (!creep.memory.working) {
+      var self = this;
+      let creepCarry = creep.carry![RESOURCE_ENERGY] || 0;
+      Ed.EnergyDistributor.registerRequest(
+          creep, priority, creep.carryCapacity - creepCarry, function(e: Ed.EnergyContainer) {
+        if (creep.pos.isNearTo(e.obj)) {
+          e.giveEnergy(creep);
+        } else {
+          creep.moveTo(e.obj);
+          self.moveRequested = true;
+        }
+      });
     }
   }
 }
-

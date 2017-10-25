@@ -8,7 +8,6 @@ import * as Cmngr from "./CarrierManager";
 import * as Ed from "./EnergyDistributor";
 import * as Fmngr from "./FighterManager";
 import * as Hmngr from "./HarvesterManager";
-import * as Umngr from "./UpgraderManager";
 
 var profile = false;
 
@@ -22,7 +21,6 @@ export function loop() {
       "harvester": new Hmngr.HarvesterManager(),
       "carrier": new Cmngr.CarrierManager(),
       "fighter": new Fmngr.FighterManager(),
-      "upgrader": new Umngr.UpgraderManager(),
       "builder": new Bmngr.BuilderManager()
     };
     //register living creeps
