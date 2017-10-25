@@ -211,7 +211,41 @@ export class HarvesterManager extends Mngr.Manager {
     });
   }
 
-  _tryExtensionSpot(room: Room, src: SourceDefinition, costs: CostMatrix, minerIdx: number): RoomPosition[] | false {
+  static getBodyParts(priorities: string[], energy: number): Mngr.BodyDesign {
+    let design = <Mngr.BodyDesign>{
+      "body": <string[]>[],
+      "price": 0
+    };
+    let curEnergy = energy;
+    // Make it WORK, MOVE, CARRY.
+    for (let priority of priorities) {
+      let partCost = BODYPART_COST[priority];
+      design.body.push(priority);
+      design.price += partCost;
+    }
+    if (energy - design.price < 0) {
+      return design;
+    }
+    // Scale WORK as much as possible.
+    let workPrice = BODYPART_COST[WORK];
+    while (energy - design.price > workPrice) {
+      if (energy - design.price > workPrice) {
+        design.body.push(WORK);
+        design.price += workPrice;
+      }
+    }
+    // Spend the rest on CARRY. 
+    let carryPrice = BODYPART_COST[CARRY];
+    while (energy - design.price > carryPrice) {
+      if (energy - design.price > carryPrice) {
+        design.body.push(CARRY);
+        design.price += carryPrice;
+      }
+    }
+    return design;
+  }
+
+  private _tryExtensionSpot(room: Room, src: SourceDefinition, costs: CostMatrix, minerIdx: number): RoomPosition[] | false {
     let mp = Utils.unserializeRoomPosition(src.miningPositions[minerIdx]);
     // TODO: use Utils.getArea
     for(var x = Math.max(0, mp.x-1); Math.min(49, mp.x+1) >= x; x++) {
