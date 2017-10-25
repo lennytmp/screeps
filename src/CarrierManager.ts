@@ -25,7 +25,7 @@ export class CarrierManager extends Mngr.Manager {
 
   getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.unitPriority - 1);
-    if (this.minions.length >= 3) {
+    if (this.minions.length >= CarrierManager.workQueue.length) {
       return res;
     }
     let minBodyParts = [CARRY, MOVE];
