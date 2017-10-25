@@ -38,6 +38,9 @@ export class HarvesterManager extends Mngr.Manager {
   }
 
   commandMinions(): void {
+    if (!Memory.harvester || !Memory.harvester.sources) {
+      return;
+    }
     let needs: { [id: string]: number; } = {};
     let mp2ext: { [mp: string]: Structure; } = {};
     _.forEach(Memory.harvester.sources, function(s: SourceDefinition) {
