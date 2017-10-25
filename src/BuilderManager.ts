@@ -47,7 +47,7 @@ export class BuilderManager extends Mngr.Manager {
         "blocked": false
       };
     }
-    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.priority);
+    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.priority - 1);
 
     BuilderManager.planConstructionSites();
 
@@ -90,7 +90,6 @@ export class BuilderManager extends Mngr.Manager {
     if (!b) {
       return;
     }
-    console.log("BuilderManager: gonna work on "+ JSON.stringify(b));
     let room = Game.rooms[b.positions[0].roomName];
     if (b.type == STRUCTURE_EXTENSION) {
       let max = BuilderManager.getMaxRoomExt(room);
@@ -109,7 +108,6 @@ export class BuilderManager extends Mngr.Manager {
   }
 
   static requestConstructions(positions: RoomPosition[], type: string) {
-    console.log("Requested construction for "+ type +" at "+ positions.join('+'));
     Memory.builder.queue.push(<BuildRequest>{
       "positions": positions,
       type: type

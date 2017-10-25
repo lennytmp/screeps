@@ -23,6 +23,7 @@ export function loop() {
       "fighter": new Fmngr.FighterManager(),
       "builder": new Bmngr.BuilderManager()
     };
+    Ed.EnergyDistributor.init();
     //register living creeps
     _.forEach(Game.creeps, function(creep: Creep) {
         _.forEach(managers, function(manager: Mngr.Manager) {
@@ -50,8 +51,7 @@ export function loop() {
     });
     // copy requests to energy prioritisation
     let highestPriority: number | null = null;
-    for (let i in requests) {
-      let request = requests[i];
+    for (let request of requests) {
       let clb = function(_e: Ed.EnergyContainer): void {
         if (Mngr.isSpawnRequest(request)) {
           spawner.spawnCreep(request.parts, request.role + (""+Math.random()).substring(2));
@@ -59,7 +59,7 @@ export function loop() {
           spawner.renewCreep(request.creep);
         }
       }
-      Ed.EnergyDistributor.registerRequest(spawner,
+      Ed.EnergyDistributor.registerRequest(new Ed.EnergyContainer(spawner),
                                            request.priority,
                                            request.price,
                                            clb);
@@ -75,7 +75,10 @@ export function loop() {
           if (Ed.EnergyContainer.isEnergyContainerSource(struct)) {
             let lackingEnergy = struct.energyCapacity - struct.energy;
             if (lackingEnergy > 0) {
-              Ed.EnergyDistributor.registerRequest(struct, highestPriority, lackingEnergy);
+              Ed.EnergyDistributor.registerRequest(
+                new Ed.EnergyContainer(struct),
+                highestPriority,
+                lackingEnergy);
             }
           }
         }

@@ -1,11 +1,10 @@
 import * as Utils from "./Utils";
-
-type EnergyEntity = Creep | Structure;
+import * as C from "./CarrierManager";
 
 type EnergyRequest = {
   priority: number,
   energy: number,
-  consumer: EnergyEntity,
+  consumer: EnergyContainer,
   fulfilled: boolean,
   clb: (e: EnergyContainer) => void
 }
@@ -42,23 +41,44 @@ export class EnergyContainer {
     this.obj = a;
   }
 
-  giveEnergy(c: EnergyEntity, amount?: number): void {
+  giveEnergy(c: EnergyContainer, amount?: number): number {
+    if (this.obj.id == c.obj.id) {
+      return OK;
+    }
     if (Utils.isCreep(this.obj)) {
       if (amount) {
-        this.obj.transfer(c, RESOURCE_ENERGY, amount);
+        return this.obj.transfer(c.obj, RESOURCE_ENERGY, amount);
       } else {
-        this.obj.transfer(c, RESOURCE_ENERGY);
+        return this.obj.transfer(c.obj, RESOURCE_ENERGY);
       }
-      return;
-    } else if (Utils.isCreep(c)) {
+    } else if (Utils.isCreep(c.obj)) {
       if (amount) {
-        c.withdraw(this.obj, RESOURCE_ENERGY, amount);
+        return c.obj.withdraw(this.obj, RESOURCE_ENERGY, amount);
       } else {
-        c.withdraw(this.obj, RESOURCE_ENERGY);
+        return c.obj.withdraw(this.obj, RESOURCE_ENERGY);
       }
-      return;
     }
-    throw new Error("Either the consumer or provider of energy must be a creep");
+    throw new Error("Either the consumer or provider of energy must be a creep for giveEnergy");
+  }
+
+  getEnergy(v: EnergyContainer, amount?: number): number {
+    if (this.obj.id == v.obj.id) {
+      return OK;
+    }
+    if (Utils.isCreep(v.obj)) {
+      if (amount) {
+        return v.obj.transfer(this.obj, RESOURCE_ENERGY, amount);
+      } else {
+        return v.obj.transfer(this.obj, RESOURCE_ENERGY);
+      }
+    } else if (Utils.isCreep(this.obj)) {
+      if (amount) {
+        return this.obj.withdraw(v.obj, RESOURCE_ENERGY, amount);
+      } else {
+        return this.obj.withdraw(v.obj, RESOURCE_ENERGY);
+      }
+    }
+    throw new Error("Either the consumer or provider of energy must be a creep for getEnergy");
   }
 
   static isEnergyContainerSource(a: any): a is EnergyContainerSource {
@@ -73,7 +93,12 @@ export class EnergyDistributor {
   static requests: EnergyRequest[] = [];
   static offers: EnergyOffer[] = [];
 
-  static registerRequest(consumer: EnergyEntity,
+  static init(): void {
+    EnergyDistributor.requests = [];
+    EnergyDistributor.offers = [];
+  }
+
+  static registerRequest(consumer: EnergyContainer,
                          priority: number,
                          energy: number,
                          clb?: (e: EnergyContainer) => void): void {
@@ -102,38 +127,46 @@ export class EnergyDistributor {
       return a.priority - b.priority;
     });
     for (let request of EnergyDistributor.requests) {
-      let spawnRequest = request.consumer instanceof StructureSpawn;
+      let spawnRequest = request.consumer.obj instanceof StructureSpawn;
+      if (spawnRequest) {
+        EnergyDistributor.chargeAllExtesions(request);
+        if (request.energy == 0) {
+          continue;
+        }
+      }
+      let bestOffer: EnergyOffer | null;
+      while (request.energy > 0 && (bestOffer = EnergyDistributor.findBestOffer(request))) {
+        let ok = C.CarrierManager.requestTransfer(bestOffer.provider, request.consumer, request.energy);
+        if (ok) {
+          EnergyDistributor.transact(request, bestOffer, spawnRequest, false);
+        }
+        EnergyDistributor.transact(request, bestOffer, spawnRequest, true);
+      }
+    }
+  }
+
+  private static chargeAllExtesions(request: EnergyRequest) {
+    for (let offer of EnergyDistributor.offers) {
+      let isSpawnMatch = EnergyDistributor.isSpawnMatch(request, offer);
+      if (isSpawnMatch) {
+        EnergyDistributor.transact(request, offer, false, false);
+        if (request.energy == 0) {
+          break;
+        }
+        continue;
+      }
+    }
+  }
+
+  private static findBestOffer(request: EnergyRequest): EnergyOffer | null {
       let bestOffer: EnergyOffer | null = null;
       let bestDistance: number | null = null;
       let bestRatio: number = 0;
       for (let offer of EnergyDistributor.offers) {
-        let isSpawnMatch = EnergyDistributor.isSpawnMatch(request, offer);
-        if (!Utils.isCreep(offer.provider.obj) && !Utils.isCreep(request.consumer) && !isSpawnMatch) {
-          // Two stuctures want to exchange energy - API doesn't support that.
+        if (offer.energy == 0 || offer.provider.obj.id == request.consumer.obj.id) {
           continue;
         }
-
-        /* Spawn requests related logic */
-        if (spawnRequest && !(
-              offer.provider.obj instanceof StructureSpawn  ||
-              offer.provider.obj instanceof StructureExtension)) {
-          // spawn request can only be fullfilled by spawners and extensions,
-          // so we don't fulfill the order just reserve energy on offer.
-          // TODO: we should call carriers here.
-          let charge: number = Math.min(offer.energy, request.energy);
-          offer.energy -= charge; 
-          continue;
-        }
-        if (isSpawnMatch) {
-          EnergyDistributor.transact(request, offer, false);
-          continue;
-        }
-
-        /* Normal energy requests */
-        if (offer.energy <= request.energy) {
-          continue;
-        }
-        let dist = request.consumer.pos.getRangeTo(offer.provider.obj.pos);
+        let dist = request.consumer.obj.pos.getRangeTo(offer.provider.obj.pos);
         let ratio = Math.max(offer.energy / request.energy, 1.0);
         if (!bestDistance || bestRatio < ratio || bestDistance > dist) {
           bestDistance = dist;
@@ -141,17 +174,24 @@ export class EnergyDistributor {
           bestRatio = ratio;
         }
       }
-      if (bestOffer) {
-        EnergyDistributor.transact(request, bestOffer);
-      }
-    }
+      return bestOffer
   }
 
-  private static transact(request: EnergyRequest, offer: EnergyOffer, fulfill?: boolean) {
+  private static transact(request: EnergyRequest,
+                          offer: EnergyOffer,
+                          fulfillNever: boolean,
+                          fulfillAlways: boolean) {
       let charge: number = Math.min(offer.energy, request.energy);
       request.energy -= charge;
       offer.energy -= charge;
-      if (request.energy == 0 || fulfill) {
+      if (fulfillNever && (
+            Utils.isCreep(offer.provider.obj) ||
+            Utils.isCreep(request.consumer))) {
+        if (offer.provider.giveEnergy(request.consumer, charge) == OK) {
+          fulfillNever = false;
+        }
+      }
+      if (!fulfillNever && (request.energy == 0 || fulfillAlways)) {
         request.fulfilled = true;
         if (request.clb) {
           request.clb(offer.provider);
@@ -162,6 +202,6 @@ export class EnergyDistributor {
   private static isSpawnMatch(r: EnergyRequest, o: EnergyOffer): boolean {
     return (o.provider.obj instanceof StructureSpawn ||
              o.provider.obj instanceof StructureExtension) &&
-           r.consumer instanceof StructureSpawn;
+           r.consumer.obj instanceof StructureSpawn;
   }
 }
