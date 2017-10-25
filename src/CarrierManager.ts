@@ -1,49 +1,37 @@
 import * as Mngr from "./Manager";
-import * as Carrier from "./Carrier";
+import * as Ed from "./EnergyDistributor";
+import * as C from "./Carrier";
+import * as Utils from "./Utils";
+
+type DeliveryRequest = {
+  from: Ed.EnergyContainer,
+  to: Ed.EnergyContainer,
+  energy: number
+}
 
 export class CarrierManager extends Mngr.Manager {
-
+  static freeWorkers: number = 0;
+  static workQueue: DeliveryRequest[] = [];
+  
   readonly role = 'carrier';
+  carriers: C.Carrier[] = [];
+  readonly unitPriority: number = 50;
 
-  commandMinions(): void {
-    let needs: { [id: string]: number; } = {};
-    let extensions = this.findExtensions(Game.spawns['Spawn1'].room);
-    _.forEach(extensions, function(s: StructureExtension) {
-      needs[s.id] = 1;
-    });
-    _.forEach(this.minions, function(minion: Creep) {
-      if(minion.memory.src) {
-        needs[minion.memory.src]--;
-      }
-    });
-    _.forEach(this.minions, function(minion: Creep) {
-      if(!minion.memory.src || !Game.getObjectById(minion.memory.src)) {
-        _.forEach(needs, function(need: number, src: string): boolean {
-          if(need > 0) {
-            minion.memory.src = src;
-            needs[minion.memory.src]--;
-            return false;
-          }
-          return true;
-        });
-      }
-      Carrier.run(minion, minion.memory.src, Game.spawns['Spawn1']);
-    });
+  constructor() {
+    super();
+    CarrierManager.freeWorkers = 0;
+    CarrierManager.workQueue = [];
   }
 
   getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
-    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(0);
-
-    let minBodyParts = [CARRY, MOVE];
-
-    let extensions = this.findExtensions(Game.spawns['Spawn1'].room);
-
-    if (this.minions.length >= extensions.length) {
+    let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.unitPriority - 1);
+    if (this.minions.length >= 3) {
       return res;
     }
+    let minBodyParts = [CARRY, MOVE];
     let design = CarrierManager.getBodyParts(minBodyParts, maxEnergy);
     res.push({
-      "priority": 50,
+      "priority": this.unitPriority,
       "parts": design.body,
       "role": this.role,
       "price": design.price
@@ -51,15 +39,50 @@ export class CarrierManager extends Mngr.Manager {
     return res;
   }
 
-  findExtensions(room: Room): StructureExtension[] {
-    let ret: StructureExtension[] = [];
-    let sources = <Structure[]>room.find(FIND_MY_STRUCTURES);
-    _.forEach(sources, function(o: Structure) {
-      if (o.structureType == STRUCTURE_EXTENSION) {
-        let ext = <StructureExtension>o;
-        ret.push(ext);
+  registerMinion(creep: Creep) {
+    if (creep.memory.fetching) {
+      CarrierManager.freeWorkers++;
+    }
+    this.carriers.push(new C.Carrier(creep));
+    this.minions.push(creep);
+  }
+
+  registerOnEnergyMarket(): void {
+    for (let carrier of this.carriers) {
+      carrier.registerRequest();
+    }
+  }
+
+  commandMinions(): void {
+    for (let request of CarrierManager.workQueue) {
+      let bestDist: number | null = null;
+      let bestCandidate: C.Carrier | null = null;
+      for (let carrier of this.carriers) {
+        let freeSpace = carrier.creep.carryCapacity - carrier.creep.carry![RESOURCE_ENERGY]!;
+        if (!carrier.assigned && freeSpace > 0) {
+          let dist = carrier.creep.pos.getRangeTo(request.from.obj.pos);
+          if (!bestCandidate || (bestDist && dist < bestDist)) {
+            bestCandidate = carrier;
+            bestDist = dist;
+          }
+        }
       }
+      if (bestCandidate) {
+        bestCandidate.run(request.from, request.energy);
+        bestCandidate.assigned = true;
+      }
+    }
+  }
+
+  static requestTransfer(from: Ed.EnergyContainer, energy: number): boolean {
+    if (Utils.isCreep(from.obj) && from.obj.name.startsWith("carrier")) {
+      return false;
+    }
+    CarrierManager.workQueue.push(<DeliveryRequest>{
+      "from": from,
+      "energy": energy
     });
-    return ret;
+    CarrierManager.freeWorkers--;
+    return CarrierManager.freeWorkers >= 0;
   }
 }

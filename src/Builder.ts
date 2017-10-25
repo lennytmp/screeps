@@ -42,13 +42,16 @@ export class Builder {
       var self = this;
       let creepCarry = creep.carry![RESOURCE_ENERGY] || 0;
       Ed.EnergyDistributor.registerRequest(
-          creep, priority, creep.carryCapacity - creepCarry, function(e: Ed.EnergyContainer) {
-        if (creep.pos.isNearTo(e.obj)) {
-          e.giveEnergy(creep);
-        } else {
-          creep.moveTo(e.obj);
-          self.moveRequested = true;
-        }
+          new Ed.EnergyContainer(creep),
+          priority,
+          creep.carryCapacity - creepCarry,
+          function(c: Ed.EnergyContainer, e: number) {
+            if (creep.pos.isNearTo(c.obj)) {
+              c.giveEnergy(new Ed.EnergyContainer(creep), e);
+            } else {
+              creep.moveTo(c.obj);
+              self.moveRequested = true;
+            }
       });
     }
   }

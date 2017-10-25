@@ -28,8 +28,7 @@ export class HarvesterManager extends Mngr.Manager {
         }
       }
     }
-    for (let i in this.minions) {
-      let minion = this.minions[i];
+    for (let minion of this.minions) {
       if (minion.carry && minion.carry[RESOURCE_ENERGY]! > 0) {
         let cnt = new Ed.EnergyContainer(minion);
         Ed.EnergyDistributor.registerOffer(cnt, cnt.energy);
@@ -209,7 +208,6 @@ export class HarvesterManager extends Mngr.Manager {
         costs.set(pos.x, pos.y, 255);
       });
       let res = self._tryExtensionSpot(room, src, costs, 0);
-      console.log(src.id +": "+ JSON.stringify(res));
       if (res) {
         src.extensionPositions = res;
         Bmngr.BuilderManager.requestConstructions(res, STRUCTURE_EXTENSION);
@@ -307,7 +305,6 @@ export class HarvesterManager extends Mngr.Manager {
       });
       let mainRoad = Utils.pathToRoomPositions(room, closestPath);
       mainRoad.pop(); // Don't build a road under the extension
-      console.log(src.id +": closest="+ JSON.stringify([closestDistance, closestPosition, mainRoad]));
       Bmngr.BuilderManager.requestConstructions(mainRoad, STRUCTURE_ROAD);
       let end = mainRoad[mainRoad.length-1];
       _.forEach(src.extensionPositions!, function(pos: RoomPosition) {
