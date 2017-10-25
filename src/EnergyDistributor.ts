@@ -136,7 +136,8 @@ export class EnergyDistributor {
       }
       let bestOffer: EnergyOffer | null;
       while (request.energy > 0 && (bestOffer = EnergyDistributor.findBestOffer(request))) {
-        let ok = C.CarrierManager.requestTransfer(bestOffer.provider, request.consumer, request.energy);
+        let charge: number = Math.min(bestOffer.energy, request.energy);
+        let ok = C.CarrierManager.requestTransfer(bestOffer.provider, request.consumer, charge);
         if (ok) {
           EnergyDistributor.transact(request, bestOffer, spawnRequest, false);
         }

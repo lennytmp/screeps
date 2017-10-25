@@ -18,13 +18,7 @@ export class Carrier {
   run(target: Ed.EnergyContainer, e: number): void {
     let creep = this.creep;
     if (target.giveEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(target.obj, {"visualizePathStyle": {
-          fill: 'transparent',
-          stroke: '#fff',
-          lineStyle: 'dashed',
-          strokeWidth: .15,
-          opacity: .1 
-      }});
+      creep.moveTo(target.obj);
     }
   }
 
