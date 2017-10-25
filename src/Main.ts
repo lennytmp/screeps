@@ -49,6 +49,7 @@ export function loop() {
                                  spawner.room.energyCapacityAvailable));
     });
     // copy requests to energy prioritisation
+    let highestPriority: number | null = null;
     for (let i in requests) {
       let request = requests[i];
       let clb = function(_e: Ed.EnergyContainer): void {
@@ -62,6 +63,23 @@ export function loop() {
                                            request.priority,
                                            request.price,
                                            clb);
+      if (!highestPriority || request.priority < highestPriority) {
+        highestPriority = request.priority;
+      }
+    }
+    // also ask extensions to be filled
+    if (highestPriority) {
+      let exts = <Structure[]>spawner.room.find(FIND_MY_STRUCTURES);
+      for (let struct of exts) {
+        if (struct instanceof StructureExtension) {
+          if (Ed.EnergyContainer.isEnergyContainerSource(struct)) {
+            let lackingEnergy = struct.energyCapacity - struct.energy;
+            if (lackingEnergy > 0) {
+              Ed.EnergyDistributor.registerRequest(struct, highestPriority, lackingEnergy);
+            }
+          }
+        }
+      }
     }
     profiler.registerEvent("orders generation");
 
