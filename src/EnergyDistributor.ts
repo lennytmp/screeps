@@ -76,7 +76,7 @@ export class EnergyDistributor {
   static registerRequest(consumer: EnergyEntity,
                          priority: number,
                          energy: number,
-                         clb: (e: EnergyContainer) => void): void {
+                         clb?: (e: EnergyContainer) => void): void {
     EnergyDistributor.requests.push(<EnergyRequest>{
       "consumer": consumer,
       "priority": priority,
@@ -107,16 +107,21 @@ export class EnergyDistributor {
       let bestDistance: number | null = null;
       let bestRatio: number = 0;
       for (let offer of EnergyDistributor.offers) {
+        let isSpawnMatch = EnergyDistributor.isSpawnMatch(request, offer);
+        if (!Utils.isCreep(offer.provider.obj) && !Utils.isCreep(request.consumer) && !isSpawnMatch) {
+          // Two stuctures want to exchange energy - API doesn't support that.
+          continue;
+        }
 
         /* Spawn requests related logic */
         if (spawnRequest && !(
               offer.provider.obj instanceof StructureSpawn  ||
               offer.provider.obj instanceof StructureExtension)) {
-          continue;
-        }
-        let isSpawnMatch = EnergyDistributor.isSpawnMatch(request, offer);
-        if (!Utils.isCreep(offer.provider.obj) && !Utils.isCreep(request.consumer) && !isSpawnMatch) {
-          // Two stuctures want to exchange energy - API doesn't support that.
+          // spawn request can only be fullfilled by spawners and extensions,
+          // so we don't fulfill the order just reserve energy on offer.
+          // TODO: we should call carriers here.
+          let charge: number = Math.min(offer.energy, request.energy);
+          offer.energy -= charge; 
           continue;
         }
         if (isSpawnMatch) {
