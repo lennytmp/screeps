@@ -10,7 +10,6 @@ type DeliveryRequest = {
 }
 
 export class CarrierManager extends Mngr.Manager {
-  static freeWorkers: number = 0;
   static workQueue: DeliveryRequest[] = [];
   
   readonly role = 'carrier';
@@ -19,15 +18,18 @@ export class CarrierManager extends Mngr.Manager {
 
   constructor() {
     super();
-    CarrierManager.freeWorkers = 0;
     CarrierManager.workQueue = [];
+    if (!Memory.delivery) {
+      Memory.delivery = {"freeWorkers": 0};
+    }
   }
 
   getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.unitPriority - 1);
-    if (this.minions.length >= CarrierManager.workQueue.length) {
+    if (Memory.delivery.freeWorkers >= 0) {
       return res;
     }
+    Memory.delivery.freeWorkers = 0;
     let minBodyParts = [CARRY, MOVE];
     let design = CarrierManager.getBodyParts(minBodyParts, maxEnergy);
     res.push({
@@ -41,7 +43,7 @@ export class CarrierManager extends Mngr.Manager {
 
   registerMinion(creep: Creep) {
     if (creep.memory.fetching) {
-      CarrierManager.freeWorkers++;
+      Memory.delivery.freeWorkers++;
     }
     this.carriers.push(new C.Carrier(creep));
     this.minions.push(creep);
@@ -82,7 +84,7 @@ export class CarrierManager extends Mngr.Manager {
       "from": from,
       "energy": energy
     });
-    CarrierManager.freeWorkers--;
-    return CarrierManager.freeWorkers >= 0;
+    Memory.delivery.freeWorkers--;
+    return Memory.delivery.freeWorkers >= 0;
   }
 }
