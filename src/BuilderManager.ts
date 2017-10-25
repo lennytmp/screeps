@@ -84,7 +84,7 @@ export class BuilderManager extends Mngr.Manager {
        Memory.builder.desiredRCL <= Game.rooms[Memory.builder.blocked_by_rcl[0].positions[0].roomName].controller!.level) {
 
       Memory.builder.queue = [].concat(Memory.builder.blocked_by_rcl, Memory.builder.queue);
-      Memory.builder.queue.blocked_by_rcl = [];
+      Memory.builder.blocked_by_rcl = [];
     }
     let b = Memory.builder.queue.shift();
     if (!b) {
