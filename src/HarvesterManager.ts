@@ -233,18 +233,14 @@ export class HarvesterManager extends Mngr.Manager {
     // Scale WORK as much as possible.
     let workPrice = BODYPART_COST[WORK];
     while (energy - design.price > workPrice) {
-      if (energy - design.price > workPrice) {
-        design.body.push(WORK);
-        design.price += workPrice;
-      }
+      design.body.push(WORK);
+      design.price += workPrice;
     }
     // Spend the rest on CARRY. 
     let carryPrice = BODYPART_COST[CARRY];
     while (energy - design.price > carryPrice) {
-      if (energy - design.price > carryPrice) {
-        design.body.push(CARRY);
-        design.price += carryPrice;
-      }
+      design.body.push(CARRY);
+      design.price += carryPrice;
     }
     return design;
   }
