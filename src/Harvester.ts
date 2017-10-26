@@ -1,7 +1,5 @@
 import * as Utils from "./Utils";
 
-const RENEWAL_COEF = 2;
-
 export function run(creep: Creep, src: string, dst: Structure): void {
   if (creep.memory.reviving && creep.ticksToLive > 1000) {
     creep.memory.reviving = false;

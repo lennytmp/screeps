@@ -38,21 +38,27 @@ export class Builder {
 
   registerRequest(priority: number): void {
     let creep = this.creep;
-    if (!creep.memory.working) {
-      var self = this;
-      let creepCarry = creep.carry![RESOURCE_ENERGY] || 0;
-      Ed.EnergyDistributor.registerRequest(
-          new Ed.EnergyContainer(creep),
-          priority,
-          creep.carryCapacity - creepCarry,
-          function(c: Ed.EnergyContainer, e: number) {
-            if (creep.pos.isNearTo(c.obj)) {
-              c.giveEnergy(new Ed.EnergyContainer(creep), e);
-            } else {
-              creep.moveTo(c.obj);
-              self.moveRequested = true;
-            }
-      });
+    let creepCarry = creep.carry![RESOURCE_ENERGY] || 0;
+    let freeSpace = creep.carryCapacity - creepCarry;
+    if (freeSpace == 0) {
+      return;
     }
+    let clb: ((c: Ed.EnergyContainer, e: number) => void) | undefined = undefined;
+    if (!creep.memory.working) {
+      priority--; // I'm not working, my priority is higher. 
+      let self = this;
+      clb = function(c: Ed.EnergyContainer, e: number) {
+        if (creep.pos.isNearTo(c.obj)) {
+          c.giveEnergy(new Ed.EnergyContainer(creep), e);
+        } else {
+          creep.moveTo(c.obj);
+          self.moveRequested = true;
+        }
+      };
+    }
+    Ed.EnergyDistributor.registerRequest(new Ed.EnergyContainer(creep),
+                                         priority,
+                                         creep.carryCapacity - creepCarry,
+                                         clb);
   }
 }

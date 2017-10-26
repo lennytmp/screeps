@@ -27,6 +27,7 @@ export class CarrierManager extends Mngr.Manager {
   getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.unitPriority - 1);
     if (Memory.delivery.freeWorkers >= 0) {
+      Memory.delivery.freeWorkers = 0;
       return res;
     }
     Memory.delivery.freeWorkers = 0;
