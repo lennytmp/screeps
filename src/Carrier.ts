@@ -18,6 +18,7 @@ export class Carrier {
 
   run(target: Ed.EnergyContainer, e: number): void {
     let creep = this.creep;
+    this.getEnergyFromNearbyHarvesters();
     if (target.giveEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
       creep.moveTo(target.obj);
     }
