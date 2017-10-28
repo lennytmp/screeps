@@ -7,6 +7,6 @@ export function run(creep: Creep): void {
     }
   });
   if (!isShooting) {
-    creep.move(Math.floor(Math.random()*8)); // Simpliest patrol
+    creep.move(<DirectionConstant>Math.floor(Math.random()*8)); // Simpliest patrol
   }
 }

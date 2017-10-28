@@ -1,11 +1,9 @@
-// You MUST make a copy of this (called `screeps.js`)!
-
 module.exports = {
-    email: 'EMAIL',
-    password: 'PASSWORD',
-    branch: 'default',
+    email: 'email@gmail.com',
+    password: 'password',
+    branch: 'dev',
     ptr: false,
-    host: 'someprivateserver.com',
-    port: 9000,
-    secure: false
+    host: 'screeps.com',
+    path: '/api/user/code',
+    secure: true 
 };

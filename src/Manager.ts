@@ -2,7 +2,7 @@ import * as Utils from "./Utils";
 
 export type SpawnRequest = {
   priority: number,
-  parts: string[],
+  parts: BodyPartConstant[],
   role: string,
   price: number
 }
@@ -14,7 +14,7 @@ export type RenewRequest = {
 }
 
 export type BodyDesign = {
-  body: string[],
+  body: BodyPartConstant[],
   price: number
 }
 
@@ -58,7 +58,7 @@ export abstract class Manager {
     return requests;
   }
 
-  static getBodyParts(priorities: string[], energy: number): BodyDesign {
+  static getBodyParts(priorities: BodyPartConstant[], energy: number): BodyDesign {
     let design = <BodyDesign>{
       "body": <string[]>[],
       "price": 0

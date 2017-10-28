@@ -62,7 +62,7 @@ export class HarvesterManager extends Mngr.Manager {
     });
     if (unassigned.length || this.minions.length < needed) {
       let unused: { [mp: string]: SourceDefinition; } = {};
-      let mp2ext: { [mp: string]: Structure; } = {};
+      let mp2ext: { [mp: string]: RoomPosition; } = {};
       for (let s of Memory.harvester.sources) {
         for (let mp of s.miningPositions) {
           unused[Utils.posToString(mp)] = s;
@@ -129,7 +129,7 @@ export class HarvesterManager extends Mngr.Manager {
           dst = Game.spawns['Spawn1'];
         }
       }
-      harvester.run(creep.memory.source, dst);
+      harvester.run(creep.memory.source!, dst);
     }
   }
 
@@ -373,20 +373,4 @@ export class HarvesterManager extends Mngr.Manager {
     });
   }
 
-  static getMyConsumer(creep: Creep): Creep | Structure {
-    return creep.pos.findClosestByRange(
-      FIND_MY_STRUCTURES, {
-        filter: function(o: Structure): boolean {
-          if (o.structureType == STRUCTURE_EXTENSION) {
-            let ext = <StructureExtension>o;
-            return ext.energy < ext.energyCapacity;
-          }
-          if (o.structureType == STRUCTURE_SPAWN) {
-            let spawn = <StructureSpawn>o;
-            return spawn.energy < spawn.energyCapacity;
-          }
-          return false;
-        }
-    });
-  }
 }

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-=======
-// Profiler
-import * as Profiler from "./libs/Profiler";
->>>>>>> new_lurr
+import * as Profiler from "./libs/Profiler/Profiler";
 import {ErrorMapper} from "./libs/ErrorMapper";
 import * as prf from "./Profiler";
 

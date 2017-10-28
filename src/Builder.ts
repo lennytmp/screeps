@@ -8,7 +8,7 @@ export class Builder {
 
   constructor(creep: Creep) {
     this.creep = creep;
-    if(creep.memory.working && creep.carry.energy == 0) {
+    if (creep.memory.working && creep.carry.energy == 0) {
       creep.memory.working = false;
     }
     if (!creep.memory.working && creep.carry.energy == creep.carryCapacity) {

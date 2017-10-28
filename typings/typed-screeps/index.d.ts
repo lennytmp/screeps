@@ -1280,6 +1280,13 @@ interface Memory {
     };
 }
 interface CreepMemory {
+  working: boolean;
+  fetching: boolean;
+  isReviving: boolean;
+  isHarvesting: boolean;
+  mp: RoomPosition;
+  source: string | undefined;
+  dst: string | RoomPosition | undefined;
 }
 interface FlagMemory {
 }

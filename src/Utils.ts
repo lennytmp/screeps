@@ -93,7 +93,7 @@ export function getCreepPrice(creep: Creep) {
   return getBodyPrice(getBodyArray(creep.body));
 }
 
-export function getBodyPrice(bodyParts: string[]) {
+export function getBodyPrice(bodyParts: BodyPartConstant[]) {
   let price = 0;
   for (let i = 0; i < bodyParts.length; i++) {
     price += BODYPART_COST[bodyParts[i]];
@@ -101,8 +101,8 @@ export function getBodyPrice(bodyParts: string[]) {
   return price;
 }
 
-export function getBodyArray(bodyStruct: BodyPartDefinition[]): string[] {
-  let result: string[] = [];
+export function getBodyArray(bodyStruct: BodyPartDefinition[]): BodyPartConstant[] {
+  let result: BodyPartConstant[] = [];
   for (let i in bodyStruct) {
     result.push(bodyStruct[i].type);
   }
