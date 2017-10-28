@@ -66,7 +66,7 @@ export class CarrierManager extends Mngr.Manager {
       let bestCandidate: C.Carrier | null = null;
       for (let carrier of this.carriers) {
         let freeSpace = carrier.creep.carryCapacity - carrier.creep.carry![RESOURCE_ENERGY]!;
-        if (carrier.moveRequested || carrier.assigned && freeSpace == 0) {
+        if (carrier.moveRequested || carrier.assigned || freeSpace == 0) {
           continue;
         }
         let dist = carrier.creep.pos.getRangeTo(request.from.obj.pos);
