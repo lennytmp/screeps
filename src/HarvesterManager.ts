@@ -190,7 +190,7 @@ export class HarvesterManager extends Mngr.Manager {
 
   calcExtensions(room: Room, srcs: SourceDefinition[]) {
     let self = this;
-    _.forEach(srcs, function(src: SourceDefinition) {
+    _.forEach(srcs.reverse(), function(src: SourceDefinition) {
       let source = <Source>Game.getObjectById(src.id);
       let costs = self._getRoomCostMatrix(room);
       let p = source.pos;
