@@ -306,7 +306,16 @@ export class HarvesterManager extends Mngr.Manager {
       _.forEach(src.extensionPositions!, function(pos: RoomPosition) {
         pos = Utils.unserializeRoomPosition(pos);
         let path = room.findPath(end, pos, {
-          "ignoreCreeps": true
+          "ignoreCreeps": true,
+          "costCallback": function(_room: string, cm: CostMatrix) {
+            for (let p of src.miningPositions!) {
+              cm.set(p.x, p.y, 255);
+            }
+            for (let p of src.extensionPositions!) {
+              cm.set(p.x, p.y, 255);
+            }
+            return false;
+          }
         });
         if(path.length > 1) {
           let road = Utils.pathToRoomPositions(room, path);
