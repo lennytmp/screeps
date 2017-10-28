@@ -122,8 +122,12 @@ export class HarvesterManager extends Mngr.Manager {
       } else {
         let ep = creep.memory.dst;
         let structures = <Structure[]>Game.rooms[ep.roomName].lookForAt(LOOK_STRUCTURES, Utils.unserializeRoomPosition(ep));
-        dst = structures[0];
-        creep.memory.dst = dst.id;
+        if(structures.length) {
+          dst = structures[0];
+          creep.memory.dst = dst.id;
+        } else {
+          dst = Game.spawns['Spawn1'];
+        }
       }
       harvester.run(creep.memory.source, dst);
     }
@@ -282,8 +286,8 @@ export class HarvesterManager extends Mngr.Manager {
       }
     }
     for (let creep of this.minions) {
-      if (creep.memory.mp && mp2ext[creep.memory.mp]) {
-        creep.memory.dst = mp2ext[creep.memory.mp];
+      if (creep.memory.mp && mp2ext[Utils.posToString(creep.memory.mp)]) {
+        creep.memory.dst = mp2ext[Utils.posToString(creep.memory.mp)];
       }
     }
   }
