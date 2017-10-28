@@ -67,27 +67,7 @@ export class EnergyContainer {
   }
 
   getEnergy(v: EnergyContainer, amount?: number): number {
-    if (this.obj.id == v.obj.id) {
-      return OK;
-    }
-    let takeAll = v.shouldTakeAll();
-    if (!amount || takeAll) {
-      amount = Math.min(this.energyCapacity - this.energy, v.energy);
-    }
-    if (Utils.isCreep(v.obj)) {
-      if (amount) {
-        return v.obj.transfer(this.obj, RESOURCE_ENERGY, amount);
-      } else {
-        return v.obj.transfer(this.obj, RESOURCE_ENERGY);
-      }
-    } else if (Utils.isCreep(this.obj)) {
-      if (amount) {
-        return this.obj.withdraw(v.obj, RESOURCE_ENERGY, amount);
-      } else {
-        return this.obj.withdraw(v.obj, RESOURCE_ENERGY);
-      }
-    }
-    throw new Error("Either the consumer or provider of energy must be a creep for getEnergy");
+    return v.giveEnergy(this, amount);
   }
 
   shouldTakeAll() {
