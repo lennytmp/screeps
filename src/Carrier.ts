@@ -33,7 +33,8 @@ export class Carrier {
           new Ed.EnergyContainer(creep),
           creepCarry,
           function(c: Ed.EnergyContainer, e: number) {
-            if (c.getEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
+            let x = new Ed.EnergyContainer(creep);
+            if (x.giveEnergy(c, e) == ERR_NOT_IN_RANGE) {
               creep.moveTo(c.obj);
               self.getEnergyFromNearbyHarvesters();
               self.moveRequested = true;
