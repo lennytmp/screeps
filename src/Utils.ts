@@ -59,6 +59,10 @@ export function isCreep(a: any): a is Creep {
   return (<Creep>a).body !== undefined && (<Creep>a).withdraw !== undefined;
 }
 
+export function isResource(a: any): a is Resource {
+  return (<Resource>a).resourceType !== undefined && (<Resource>a).amount !== undefined;
+}
+
 export function unserializeRoomPosition(p: RoomPosition): RoomPosition {
   return new RoomPosition(p.x, p.y, p.roomName);
 }
