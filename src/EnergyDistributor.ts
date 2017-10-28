@@ -46,14 +46,18 @@ export class EnergyContainer {
     if (this.obj.id == c.obj.id) {
       return OK;
     }
+    let takeAll = this.shouldTakeAll();
+    if (!amount || takeAll) {
+      amount = Math.min(c.energyCapacity - c.energy, this.energy);
+    }
     if (Utils.isCreep(this.obj)) {
-      if (amount) {
+      if (amount && takeAll) {
         return this.obj.transfer(c.obj, RESOURCE_ENERGY, amount);
       } else {
         return this.obj.transfer(c.obj, RESOURCE_ENERGY);
       }
     } else if (Utils.isCreep(c.obj)) {
-      if (amount) {
+      if (amount && takeAll) {
         return c.obj.withdraw(this.obj, RESOURCE_ENERGY, amount);
       } else {
         return c.obj.withdraw(this.obj, RESOURCE_ENERGY);
@@ -65,6 +69,10 @@ export class EnergyContainer {
   getEnergy(v: EnergyContainer, amount?: number): number {
     if (this.obj.id == v.obj.id) {
       return OK;
+    }
+    let takeAll = v.shouldTakeAll();
+    if (!amount || takeAll) {
+      amount = Math.min(this.energyCapacity - this.energy, v.energy);
     }
     if (Utils.isCreep(v.obj)) {
       if (amount) {
@@ -80,6 +88,11 @@ export class EnergyContainer {
       }
     }
     throw new Error("Either the consumer or provider of energy must be a creep for getEnergy");
+  }
+
+  shouldTakeAll() {
+    return (Utils.isCreep(this.obj) && this.obj.name.startsWith("harvester")) ||
+      (this.obj instanceof StructureContainer);
   }
 
   static isEnergyContainerSource(a: any): a is EnergyContainerSource {
