@@ -18,7 +18,6 @@ export class Carrier {
 
   run(target: Ed.EnergyContainer, e: number): void {
     let creep = this.creep;
-    this.getEnergyFromNearbyHarvesters();
     if (target.giveEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
       creep.moveTo(target.obj);
     }
@@ -36,29 +35,9 @@ export class Carrier {
             let x = new Ed.EnergyContainer(creep);
             if (x.giveEnergy(c, e) == ERR_NOT_IN_RANGE) {
               creep.moveTo(c.obj);
-              self.getEnergyFromNearbyHarvesters();
               self.moveRequested = true;
             }
           });
-    }
-  }
-
-  getEnergyFromNearbyHarvesters(): void {
-    let creep = this.creep;
-    let freeSpace = creep.carryCapacity - creep.carry![RESOURCE_ENERGY]!;
-    if (freeSpace == 0) {
-      return;
-    }
-    let area = Utils.getArea(creep.pos, 1);
-    let resPositions = <LookAtResultWithPos[]>creep.room.lookForAtArea(
-        LOOK_CREEPS, area.minY, area.minX, area.maxY, area.maxX, true);
-    for (let resPos of resPositions) {
-      let target = resPos.creep!;
-      if (!target.name.startsWith("harvester") || target.carry[RESOURCE_ENERGY] == 0) {
-        continue;
-      }
-      let energy = Math.min(freeSpace, target.carry![RESOURCE_ENERGY]!);
-      (new Ed.EnergyContainer(target)).giveEnergy(new Ed.EnergyContainer(creep), energy);
     }
   }
 }
