@@ -26,19 +26,8 @@ export class BuilderManager extends Mngr.Manager {
   priority: number = 75;
   builders: B.Builder[] = [];
 
-  registerMinion(creep: Creep) {
-    this.builders.push(new B.Builder(creep));
-    this.minions.push(creep);
-  }
-
-  registerOnEnergyMarket(): void {
-    for (let i in this.builders) {
-      // Energy requests for  upgraders are more important than building a new one
-      this.builders[i].registerRequest(this.priority - 1);
-    }
-  }
-
-  getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
+  constructor() {
+    super();
     if (!Memory.builder) {
       Memory.builder = {
         "queue": [],
@@ -47,6 +36,21 @@ export class BuilderManager extends Mngr.Manager {
         "blocked": false
       };
     }
+  }
+
+  registerMinion(creep: Creep) {
+    this.builders.push(new B.Builder(creep));
+    this.minions.push(creep);
+  }
+
+  registerOnEnergyMarket(): void {
+    for (let i in this.builders) {
+      // Energy requests for upgraders are more important than building a new one
+      this.builders[i].registerRequest(this.priority - 1);
+    }
+  }
+
+  getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.priority - 1);
 
     BuilderManager.planConstructionSites();

@@ -26,6 +26,15 @@ export class HarvesterManager extends Mngr.Manager {
   }
 
   registerOnEnergyMarket(): void {
+    let containers = <StructureContainer[]>Game.spawns['Spawn1'].room.find(FIND_STRUCTURES, {
+      filter: { structureType: STRUCTURE_CONTAINER}
+    });
+    for (let container of containers) {
+      let cnt = new Ed.EnergyContainer(container);
+      if (cnt.energy > 0) {
+        Ed.EnergyDistributor.registerOffer(cnt, cnt.energy);
+      }
+    }
     for (let i in Game.structures) {
       let struct = Game.structures[i];
       if (Ed.EnergyContainer.isEnergyContainerSource(struct)) {
