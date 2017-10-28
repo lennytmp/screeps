@@ -59,7 +59,7 @@ export class CarrierManager extends Mngr.Manager {
 
   commandMinions(): void {
     CarrierManager.workQueue.sort(function(a: DeliveryRequest, b: DeliveryRequest) {
-      return a.energy - b.energy;
+      return b.energy - a.energy;
     });
     for (let request of CarrierManager.workQueue) {
       let bestDist: number | null = null;
