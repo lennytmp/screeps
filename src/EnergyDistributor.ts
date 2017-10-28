@@ -15,17 +15,21 @@ type EnergyOffer = {
   clb?: (c: EnergyContainer, e: number) => void
 }
 
-export type EnergyContainerSource = StructureSpawn | StructureExtension | StructureContainer | Creep;
+export type EnergyContainerSource = StructureSpawn | StructureExtension | StructureContainer | Creep | Resource;
 
 export class EnergyContainer {
   energy: number = 0;
   energyCapacity: number = 0;
   obj: EnergyContainerSource;
 
-  constructor(a: StructureSpawn | StructureExtension | StructureContainer | Creep) {
+  constructor(a: StructureSpawn | StructureExtension | StructureContainer | Creep | Resource) {
     if (a instanceof StructureSpawn || a instanceof StructureExtension) {
       this.energy = a.energy;
       this.energyCapacity = a.energyCapacity;
+    }
+    if (a instanceof Resource) {
+      this.energy = a.amount;
+      this.energyCapacity = a.amount;
     }
     if (a instanceof StructureContainer) {
       this.energy = a.store[RESOURCE_ENERGY];
@@ -51,13 +55,18 @@ export class EnergyContainer {
       amount = Math.min(c.energyCapacity - c.energy, this.energy);
     }
     if (Utils.isCreep(this.obj)) {
+      if (Utils.isResource(c.obj)) {
+        throw new Error("Why are you giving more energy to a pile of dropped energy?!");
+      }
       if (amount && takeAll) {
         return this.obj.transfer(c.obj, RESOURCE_ENERGY, amount);
       } else {
         return this.obj.transfer(c.obj, RESOURCE_ENERGY);
       }
     } else if (Utils.isCreep(c.obj)) {
-      if (amount && takeAll) {
+      if (Utils.isResource(this.obj)) {
+        return c.obj.pickup(this.obj);
+      } else if (amount && takeAll) {
         return c.obj.withdraw(this.obj, RESOURCE_ENERGY, amount);
       } else {
         return c.obj.withdraw(this.obj, RESOURCE_ENERGY);
@@ -66,12 +75,9 @@ export class EnergyContainer {
     throw new Error("Either the consumer or provider of energy must be a creep for giveEnergy");
   }
 
-  getEnergy(v: EnergyContainer, amount?: number): number {
-    return v.giveEnergy(this, amount);
-  }
-
-  shouldTakeAll() {
+  shouldTakeAll(): boolean {
     return (Utils.isCreep(this.obj) && this.obj.name.startsWith("harvester")) ||
+      Utils.isResource(this.obj) ||
       (this.obj instanceof StructureContainer);
   }
 

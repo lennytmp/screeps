@@ -35,6 +35,11 @@ export class HarvesterManager extends Mngr.Manager {
         Ed.EnergyDistributor.registerOffer(cnt, cnt.energy);
       }
     }
+    let piles = <StructureContainer[]>Game.spawns['Spawn1'].room.find(FIND_DROPPED_RESOURCES);
+    for (let pile of piles) {
+      let p = new Ed.EnergyContainer(pile);
+      Ed.EnergyDistributor.registerOffer(p, p.energy);
+    }
     for (let i in Game.structures) {
       let struct = Game.structures[i];
       if (Ed.EnergyContainer.isEnergyContainerSource(struct)) {
