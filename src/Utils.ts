@@ -84,6 +84,11 @@ export function posToString(p: RoomPosition): string {
   return p.x +","+ p.y +" ("+ p.roomName +")"
 }
 
+export function stringToPos(p: string): RoomPosition {
+  var m = /^(\d+),(\d+) \(([^)]+)\)$/.exec(p)!;
+  return new RoomPosition(Number(m[1]), Number(m[2]), m[3]);
+}
+
 export function getCreepPrice(creep: Creep) {
   return getBodyPrice(getBodyArray(creep.body));
 }

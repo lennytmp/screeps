@@ -30,9 +30,12 @@ export class Harvester {
       creep.moveTo(Game.spawns['Spawn1']);
     }
   if (this.isHarvesting) {
-    let source = <Source>Game.getObjectById(src);
-    if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(source);
+    let mp = Utils.unserializeRoomPosition(creep.memory.mp);
+    if (!creep.pos.isEqualTo(mp)) {
+      creep.moveTo(mp);
+    } else {
+      let source = <Source>Game.getObjectById(src);
+      creep.harvest(source);
     }
   }
   // Always try to transfer into our consumer.

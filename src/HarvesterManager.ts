@@ -40,63 +40,92 @@ export class HarvesterManager extends Mngr.Manager {
     }
   }
 
-  commandMinions(): void {
-    if (!Memory.harvester || !Memory.harvester.sources) {
-      return;
+  plan(): number {
+    let unassigned: Creep[] = [];
+    for (let creep of this.minions) {
+      if(!creep.memory.mp) {
+        unassigned.push(creep);
+      }
     }
-    let needs: { [id: string]: number; } = {};
-    let mp2ext: { [mp: string]: Structure; } = {};
+    let needed = 0;
     _.forEach(Memory.harvester.sources, function(s: SourceDefinition) {
-      needs[s.id] = s.miningPositions.length;
-      if (s.extensionPositions) {
-        for (let i in s.extensionPositions) {
-          let mp = s.miningPositions[i];
-          let ep = s.extensionPositions[i];
-          let structures = <Structure[]>Game.rooms[mp.roomName].lookForAt(LOOK_STRUCTURES, Utils.unserializeRoomPosition(ep));
-          if (structures.length > 0) {
-            for (let struct of structures) {
-              if (Ed.EnergyContainer.isEnergyContainerSource(struct)) {
-                let e = new Ed.EnergyContainer(struct);
-                if (e.energy < e.energyCapacity) {
-                  mp2ext[Utils.posToString(mp)] = struct;
-                }
+      needed += s.miningPositions.length;
+    });
+    if (unassigned.length || this.minions.length < needed) {
+      let unused: { [mp: string]: SourceDefinition; } = {};
+      let mp2ext: { [mp: string]: Structure; } = {};
+      for (let s of Memory.harvester.sources) {
+        for (let mp of s.miningPositions) {
+          unused[Utils.posToString(mp)] = s;
+        }
+        if (s.extensionPositions) {
+          for (let i in s.extensionPositions) {
+            let mp = s.miningPositions[i];
+            let ep = s.extensionPositions[i];
+            mp2ext[Utils.posToString(mp)] = ep;
+          }
+        }
+      }
+      for (let creep of this.minions) {
+        if(creep.memory.mp) {
+          delete unused[Utils.posToString(creep.memory.mp)];
+        }
+      }
+      for (let creep of unassigned) {
+        let workParts = 0;
+        for(let p of creep.body) {
+          if (p.type == WORK) {
+            workParts++;
+          }
+        }
+        opt: for (let optimal of [true, false]) {
+          for (let mp in unused) {
+            let s = unused[mp];
+            if (s.maxWorks == workParts || !optimal) {
+              creep.memory.source = s.id;
+              creep.memory.mp = Utils.stringToPos(mp);
+              if (s.extensionPositions) {
+                creep.memory.dst = mp2ext[mp];
               }
+              delete unused[mp];
+              break opt;
             }
           }
         }
       }
-    });
-    _.forEach(this.minions, function(minion: Creep) {
-      if(minion.memory.source) {
-        needs[minion.memory.source]--;
+      if(this.minions.length < needed) {
+        for (let i in unused) {
+          return unused[i].maxWorks;
+        }
       }
-    });
-    _.forEach(this.harvesters, function(harvester: H.Harvester) {
-      let minion = harvester.creep;
-      if(!minion.memory.source) {
-        _.forEach(needs, function(need: number, src: string): boolean {
-          if(need > 0) {
-            minion.memory.source = src;
-            needs[minion.memory.src]--;
-            return false;
-          }
-          return true;
-        });
-      }
-      let dst = mp2ext[Utils.posToString(minion.pos)];
-      if(!dst) {
+    }
+    return 0;
+  }
+
+  commandMinions(): void {
+    for (let harvester of this.harvesters) {
+      let creep = harvester.creep;
+      let dst: Structure;
+      if(!creep.memory.dst) {
         dst = Game.spawns['Spawn1'];
+      } else if (typeof creep.memory.dst == 'string') {
+        dst = <Structure>Game.getObjectById(creep.memory.dst);
+      } else {
+        let ep = creep.memory.dst;
+        let structures = <Structure[]>Game.rooms[ep.roomName].lookForAt(LOOK_STRUCTURES, Utils.unserializeRoomPosition(ep));
+        dst = structures[0];
+        creep.memory.dst = dst.id;
       }
-      harvester.run(minion.memory.source, dst);
-    });
+      harvester.run(creep.memory.source, dst);
+    }
   }
 
   getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
     let room = Game.spawns['Spawn1'].room;
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(0);
 
-    let minBodyParts = [WORK, CARRY, MOVE];
     if (this.minions.length == 0) {
+      let minBodyParts = [WORK, CARRY, MOVE];
       res.push({
         "priority": 0,
         "parts": minBodyParts,
@@ -120,18 +149,12 @@ export class HarvesterManager extends Mngr.Manager {
       this.calcExtensions(room, Memory.harvester.sources);
       Memory.harvester.hasExtensionsPlanned = true;
     }
-    // Create harvesters at p200 if there's only unsafe sources, otherwise as p0.
-    let priority = 200;
-    let needed = 0;
-    _.forEach(Memory.harvester.sources, function(s: SourceDefinition) {
-      needed += s.miningPositions.length;
-      if(!s.unsafe) {
-        priority = 1; // updating existing ones is still more important
-      }
-    });
+    let workParts = this.plan();
+    if (workParts == 0) {
       return res;
     }
-    let design = HarvesterManager.getBodyParts(minBodyParts, maxEnergy);
+    let priority = 1;
+    let design = HarvesterManager.getHarvesterBodyParts(maxEnergy, workParts);
     res.push({
       "priority": priority,
       "parts": design.body,
@@ -175,6 +198,32 @@ export class HarvesterManager extends Mngr.Manager {
     return _.sortBy(res, ['unsafe', 'distance']);
   }
 
+  static getHarvesterBodyParts(energy: number, workParts: number): Mngr.BodyDesign {
+    let design = <Mngr.BodyDesign>{
+      "body": <string[]>[],
+      "price": 0
+    };
+    let curEnergy = energy;
+    for (let part of [MOVE, CARRY, CARRY]) {
+      design.body.push(part);
+      design.price += BODYPART_COST[part];
+    }
+    // Scale WORK up to workParts.
+    let workPrice = BODYPART_COST[WORK];
+    while (energy - design.price >= workPrice && workParts > 0) {
+      design.body.push(WORK);
+      design.price += workPrice;
+      workParts--;
+    }
+    // Spend the rest on CARRY.
+    let carryPrice = BODYPART_COST[CARRY];
+    while (energy - design.price >= carryPrice) {
+      design.body.push(CARRY);
+      design.price += carryPrice;
+    }
+    return design;
+  }
+
   _getRoomCostMatrix(room: Room): CostMatrix {
     let costs: CostMatrix = PathFinder.CostMatrix;
     // Do a useless pathfind and steal the passed in CostMatrix and return that.
@@ -192,7 +241,8 @@ export class HarvesterManager extends Mngr.Manager {
 
   calcExtensions(room: Room, srcs: SourceDefinition[]) {
     let self = this;
-    _.forEach(srcs.reverse(), function(src: SourceDefinition) {
+    let mp2ext: { [mp: string]: RoomPosition; } = {};
+    for (let src of srcs.reverse()) {
       let source = <Source>Game.getObjectById(src.id);
       let costs = self._getRoomCostMatrix(room);
       let p = source.pos;
@@ -213,38 +263,20 @@ export class HarvesterManager extends Mngr.Manager {
       if (res) {
         src.extensionPositions = res;
         Bmngr.BuilderManager.requestConstructions(res, STRUCTURE_EXTENSION);
-      }
-    });
-  }
 
-  static getBodyParts(priorities: string[], energy: number): Mngr.BodyDesign {
-    let design = <Mngr.BodyDesign>{
-      "body": <string[]>[],
-      "price": 0
-    };
-    let curEnergy = energy;
-    // Make it WORK, MOVE, CARRY.
-    for (let priority of priorities) {
-      let partCost = BODYPART_COST[priority];
-      design.body.push(priority);
-      design.price += partCost;
+        // Assign all minions that already have a minionPosition to an extensionPosition now as well.
+        for (let i in res) {
+          let mp = src.miningPositions[i];
+          let ep = res[i];
+          mp2ext[Utils.posToString(mp)] = ep;
+        }
+      }
     }
-    if (energy - design.price < 0) {
-      return design;
+    for (let creep of this.minions) {
+      if (creep.memory.mp && mp2ext[creep.memory.mp]) {
+        creep.memory.dst = mp2ext[creep.memory.mp];
+      }
     }
-    // Scale WORK as much as possible.
-    let workPrice = BODYPART_COST[WORK];
-    while (energy - design.price > workPrice) {
-      design.body.push(WORK);
-      design.price += workPrice;
-    }
-    // Spend the rest on CARRY. 
-    let carryPrice = BODYPART_COST[CARRY];
-    while (energy - design.price > carryPrice) {
-      design.body.push(CARRY);
-      design.price += carryPrice;
-    }
-    return design;
   }
 
   private _tryExtensionSpot(room: Room, src: SourceDefinition, costs: CostMatrix, minerIdx: number): RoomPosition[] | false {
