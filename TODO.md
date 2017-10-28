@@ -8,3 +8,5 @@
 1. If unit has to die because it's too old - let them go to spawn and donate resources.
 1. Plan building a tower at some nice location.
 1. Implement tower logic.
+1. Make Carriers fill up completely before starting to give away their energy
+1. Consider making the *Manager return which creep-configurations it wants, and let the generic Manager spawn/kill based on that.
