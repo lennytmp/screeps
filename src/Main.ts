@@ -1,5 +1,4 @@
 import * as Profiler from "./libs/Profiler/Profiler";
-import {ErrorMapper} from "./libs/ErrorMapper";
 import * as prf from "./Profiler";
 
 import * as Mngr from "./Manager";
@@ -101,7 +100,12 @@ export function loop() {
       console.log(profiler.getOutput());
     }
   } catch(e) {
-    console.log(`Error:\n${ErrorMapper.getMappedStack(e)}`);
+		let error_string = JSON.stringify(e, Object.getOwnPropertyNames(e));
+    let lines = error_string.split("\\n");
+    let res = "";
+    for (var i = 0; i < 2; i++) {
+      console.log(lines[i]);
+    }
   }
 }
 
