@@ -10,7 +10,8 @@ export interface SourceDefinition {
   miningPositions: RoomPosition[],
   extensionPositions?: RoomPosition[],
   unsafe: boolean,
-  distance: number
+  distance: number,
+  maxWorks: number // maximum number of WORK parts per miner
 }
 
 
@@ -179,7 +180,8 @@ export class HarvesterManager extends Mngr.Manager {
         "id": src.id,
         "miningPositions": positions,
         "unsafe": unsafe,
-        "distance": _.min(distances)
+        "distance": _.min(distances),
+        "maxWorks": Math.ceil(src.energyCapacity / 300 / 2 / positions.length)
       });
       return true;
     });
