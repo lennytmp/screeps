@@ -57,17 +57,21 @@ export class CarrierManager extends Mngr.Manager {
   }
 
   commandMinions(): void {
+    CarrierManager.workQueue.sort(function(a: DeliveryRequest, b: DeliveryRequest) {
+      return a.energy - b.energy;
+    });
     for (let request of CarrierManager.workQueue) {
       let bestDist: number | null = null;
       let bestCandidate: C.Carrier | null = null;
       for (let carrier of this.carriers) {
         let freeSpace = carrier.creep.carryCapacity - carrier.creep.carry![RESOURCE_ENERGY]!;
-        if (!carrier.assigned && freeSpace > 0) {
-          let dist = carrier.creep.pos.getRangeTo(request.from.obj.pos);
-          if (!bestCandidate || (bestDist && dist < bestDist)) {
-            bestCandidate = carrier;
-            bestDist = dist;
-          }
+        if (carrier.moveRequested || carrier.assigned && freeSpace == 0) {
+          continue;
+        }
+        let dist = carrier.creep.pos.getRangeTo(request.from.obj.pos);
+        if (!bestCandidate || (bestDist && dist < bestDist)) {
+          bestCandidate = carrier;
+          bestDist = dist;
         }
       }
       if (bestCandidate) {

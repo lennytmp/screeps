@@ -17,10 +17,6 @@ export class Carrier {
   }
 
   run(target: Ed.EnergyContainer, e: number): void {
-    this.getEnergyFromNearbyHarvesters();
-    if (this.moveRequested) {
-      return;
-    }
     let creep = this.creep;
     if (target.giveEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
       creep.moveTo(target.obj);
@@ -38,6 +34,7 @@ export class Carrier {
           function(c: Ed.EnergyContainer, e: number) {
             if (c.getEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
               creep.moveTo(c.obj);
+              self.getEnergyFromNearbyHarvesters();
               self.moveRequested = true;
             }
           });
