@@ -1,7 +1,7 @@
 import * as Bmngr from "./BuilderManager";
 import * as Ed from "./EnergyDistributor";
 import * as Fmngr from "./FighterManager";
-import * as Harvester from "./Harvester";
+import * as H from "./Harvester";
 import * as Mngr from "./Manager";
 import * as Utils from "./Utils";
 
@@ -17,6 +17,12 @@ export interface SourceDefinition {
 export class HarvesterManager extends Mngr.Manager {
 
   readonly role = 'harvester';
+  harvesters: H.Harvester[] = [];
+
+  registerMinion(creep: Creep) {
+    this.harvesters.push(new H.Harvester(creep));
+    this.minions.push(creep);
+  }
 
   registerOnEnergyMarket(): void {
     for (let i in Game.structures) {
@@ -28,11 +34,8 @@ export class HarvesterManager extends Mngr.Manager {
         }
       }
     }
-    for (let minion of this.minions) {
-      if (minion.carry && minion.carry[RESOURCE_ENERGY]! > 0) {
-        let cnt = new Ed.EnergyContainer(minion);
-        Ed.EnergyDistributor.registerOffer(cnt, cnt.energy);
-      }
+    for (let minion of this.harvesters) {
+      minion.registerRequest();
     }
   }
 
@@ -67,7 +70,8 @@ export class HarvesterManager extends Mngr.Manager {
         needs[minion.memory.source]--;
       }
     });
-    _.forEach(this.minions, function(minion: Creep) {
+    _.forEach(this.harvesters, function(harvester: H.Harvester) {
+      let minion = harvester.creep;
       if(!minion.memory.source) {
         _.forEach(needs, function(need: number, src: string): boolean {
           if(need > 0) {
@@ -82,7 +86,7 @@ export class HarvesterManager extends Mngr.Manager {
       if(!dst) {
         dst = Game.spawns['Spawn1'];
       }
-      Harvester.run(minion, minion.memory.source, dst);
+      harvester.run(minion.memory.source, dst);
     });
   }
 
