@@ -100,7 +100,7 @@ export function loop() {
       console.log(profiler.getOutput());
     }
   } catch(e) {
-		let error_string = JSON.stringify(e, Object.getOwnPropertyNames(e));
+    let error_string = JSON.stringify(e, Object.getOwnPropertyNames(e));
     let lines = error_string.split("\\n");
     let res = "";
     for (var i = 0; i < 2; i++) {
