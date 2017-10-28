@@ -33,9 +33,9 @@ export class Harvester {
       creep.moveTo(Game.spawns['Spawn1']);
       return;
     }
+    let source = <Source>Game.getObjectById(src);
+    creep.harvest(source);
     if (creep.memory.isHarvesting) {
-      let source = <Source>Game.getObjectById(src);
-      creep.harvest(source);
       let mp = Utils.unserializeRoomPosition(creep.memory.mp);
       if (!creep.pos.isEqualTo(mp)) {
         creep.moveTo(mp);
