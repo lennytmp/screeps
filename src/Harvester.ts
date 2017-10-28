@@ -29,20 +29,19 @@ export class Harvester {
     if (creep.memory.isReviving) {
       creep.moveTo(Game.spawns['Spawn1']);
     }
-  if (this.isHarvesting) {
-    let source = <Source>Game.getObjectById(src);
-    if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(source);
+    if (this.isHarvesting) {
+      let source = <Source>Game.getObjectById(src);
+      if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(source);
+      }
     }
-  }
-  // Always try to transfer into our consumer.
-  if (creep.transfer(dst, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-    if (!this.isHarvesting) {
-      // But only move if we're full (or were full and haven't dropped everything yet)
-      creep.moveTo(dst);
+    // Always try to transfer into our consumer.
+    if (creep.transfer(dst, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+      if (!this.isHarvesting) {
+        // But only move if we're full (or were full and haven't dropped everything yet)
+        creep.moveTo(dst);
+      }
     }
-  }
-
   }
 
   registerRequest(): void {
