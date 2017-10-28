@@ -16,23 +16,26 @@ export class Builder {
     }
   }
 
-  run(upgrade: boolean): void {
+  run(mustUpgrade: boolean): void {
     if (this.moveRequested) {
       return;
     }
     let creep = this.creep;
-    if (creep.memory.working) {
+    let target: ConstructionSite | StructureController | null = null;
+    let err: number = OK;
+    if (!mustUpgrade) {
       let targets = <ConstructionSite[]>creep.room.find(FIND_CONSTRUCTION_SITES);
-      if (targets.length && !upgrade) {
-        if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(targets[0]);
-        }
-      } else {
-        if (creep.room.controller &&
-            creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(creep.room.controller);
-        }
+      if (targets.length) {
+        target = targets[0];
+        err = creep.build(target);
       }
+    }
+    if (!target && creep.room.controller) {
+      target = creep.room.controller;
+      err = creep.upgradeController(target);
+    }
+    if (err == ERR_NOT_IN_RANGE && creep.memory.working) {
+      creep.moveTo(target!);
     }
   }
 

@@ -147,7 +147,8 @@ export class EnergyDistributor {
       let spawnRequest = request.consumer.obj instanceof StructureSpawn;
       if (spawnRequest) {
         EnergyDistributor.chargeAllExtesions(request);
-        if (request.energy == 0) {
+        if (request.energy == 0 ||
+            request.consumer.energyCapacity == request.consumer.energy) {
           continue;
         }
       }
