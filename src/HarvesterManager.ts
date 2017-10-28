@@ -141,7 +141,7 @@ export class HarvesterManager extends Mngr.Manager {
     if(!Memory.harvester.sources) {
       Memory.harvester.sources = this.calcSources(room);
     }
-    if(Memory.harvester.hasExtensionsPlanned && !Memory.harvester.hasRoadsPlanned && room.controller && room.controller.level >= 2) {
+    if(Memory.harvester.hasExtensionsPlanned && !Memory.harvester.hasRoadsPlanned) {
       this.calcRoads(room, Memory.harvester.sources);
       Memory.harvester.hasRoadsPlanned = true;
     }
