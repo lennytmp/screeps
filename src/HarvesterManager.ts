@@ -129,10 +129,6 @@ export class HarvesterManager extends Mngr.Manager {
         priority = 1; // updating existing ones is still more important
       }
     });
-    if (this.minions.length >= needed) {
-      if (Memory.targetRCL < 2) {
-        Memory.targetRCL = 2;
-      }
       return res;
     }
     let design = HarvesterManager.getBodyParts(minBodyParts, maxEnergy);
