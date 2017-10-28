@@ -284,7 +284,7 @@ export class HarvesterManager extends Mngr.Manager {
   calcRoads(room: Room, srcs: SourceDefinition[]) {
     let self = this;
     let spawn = Game.spawns['Spawn1'];
-    _.forEach(srcs, function(src: SourceDefinition) {
+    _.forEach(srcs.reverse(), function(src: SourceDefinition) {
       let closestDistance: number = 0;
       let closestPosition: RoomPosition | null = null;
       let closestPath: PathStep[] = [];
