@@ -1,21 +1,35 @@
+import * as Ed from "./EnergyDistributor";
 import * as Utils from "./Utils";
+import * as H from "./Harvester";
 
-export function run(creep: Creep, src: string, dst: Structure): void {
-  if (creep.memory.reviving && creep.ticksToLive > 1000) {
-    creep.memory.reviving = false;
-    creep.memory.harvesting = true;
+export class Harvester {
+
+  creep: Creep;
+  isHarvesting: boolean = true;
+
+  constructor(creep: Creep) {
+    this.creep = creep;
+    if (creep.memory.isReviving && creep.ticksToLive > 1000) {
+      creep.memory.isReviving = false;
+      this.isHarvesting = true;
+      return;
+    }
+    if ((creep.ticksToLive < 300 && Utils.shouldBeRenewed(creep)) || creep.memory.isReviving) {
+      creep.memory.isReviving = true;
+      this.isHarvesting = false;
+      return;
+    }
+    if (this.isHarvesting && creep.carry.energy == creep.carryCapacity) {
+      this.isHarvesting = false;
+    }
   }
-  if ((creep.ticksToLive < 300 && Utils.shouldBeRenewed(creep)) || creep.memory.reviving) {
-    creep.memory.reviving = true;
-    creep.moveTo(Game.spawns['Spawn1']);
-    return;
-  }
-  if (creep.memory.harvesting && creep.carry.energy == creep.carryCapacity) {
-    creep.memory.harvesting = false;
-  } else if (!creep.memory.harvesting && creep.carry.energy == 0) {
-    creep.memory.harvesting = true;
-  }
-  if (creep.memory.harvesting) {
+
+  run(src: string, dst: Structure): void {
+    let creep = this.creep;
+    if (creep.memory.isReviving) {
+      creep.moveTo(Game.spawns['Spawn1']);
+    }
+  if (this.isHarvesting) {
     let source = <Source>Game.getObjectById(src);
     if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
       creep.moveTo(source);
@@ -23,9 +37,20 @@ export function run(creep: Creep, src: string, dst: Structure): void {
   }
   // Always try to transfer into our consumer.
   if (creep.transfer(dst, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-    if(!creep.memory.harvesting) {
+    if (!this.isHarvesting) {
       // But only move if we're full (or were full and haven't dropped everything yet)
       creep.moveTo(dst);
     }
   }
+
+  }
+
+  registerRequest(): void {
+    let creep = this.creep;
+    if (creep.carry && creep.carry[RESOURCE_ENERGY]! > 0) {
+      let cnt = new Ed.EnergyContainer(creep);
+      Ed.EnergyDistributor.registerOffer(cnt, cnt.energy);
+    }
+  }
 }
+
