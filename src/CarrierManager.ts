@@ -24,6 +24,14 @@ export class CarrierManager extends Mngr.Manager {
     }
   }
 
+  registerMinion(creep: Creep) {
+    if (creep.memory.fetching) {
+      Memory.delivery.freeWorkers++;
+    }
+    this.carriers.push(new C.Carrier(creep));
+    this.minions.push(creep);
+  }
+
   getSpawnOrders(_currentEnergy: number, maxEnergy: number): Mngr.SpawnerQueueElement[] {
     let res: Mngr.SpawnerQueueElement[] = this.getRenewRequests(this.unitPriority - 1);
     if (Memory.delivery.freeWorkers >= 0) {
@@ -42,13 +50,6 @@ export class CarrierManager extends Mngr.Manager {
     return res;
   }
 
-  registerMinion(creep: Creep) {
-    if (creep.memory.fetching) {
-      Memory.delivery.freeWorkers++;
-    }
-    this.carriers.push(new C.Carrier(creep));
-    this.minions.push(creep);
-  }
 
   registerOnEnergyMarket(): void {
     for (let carrier of this.carriers) {
