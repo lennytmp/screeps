@@ -31,6 +31,7 @@ export class Harvester {
     let creep = this.creep;
     if (creep.memory.isReviving) {
       creep.moveTo(Game.spawns['Spawn1']);
+      return;
     }
     if (creep.memory.isHarvesting) {
       let source = <Source>Game.getObjectById(src);
