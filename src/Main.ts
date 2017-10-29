@@ -103,7 +103,7 @@ export function loop() {
     let error_string = JSON.stringify(e, Object.getOwnPropertyNames(e));
     let lines = error_string.split("\\n");
     let res = "";
-    for (var i = 0; i < 2; i++) {
+    for (var i = 0; i < lines.length; i++) {
       console.log(lines[i]);
     }
   }
