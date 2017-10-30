@@ -24,6 +24,15 @@ export function loop() {
       "builder": new Bmngr.BuilderManager()
     };
     Ed.EnergyDistributor.init();
+    // Gather stats
+    if (!Memory.stats) {
+      Memory.stats = {}
+    }
+
+    Memory.stats['cpu.getUsed'] = Game.cpu.getUsed()
+    Memory.stats['cpu.limit'] = Game.cpu.limit
+    Memory.stats['cpu.bucket'] = Game.cpu.bucket
+
     //register living creeps
     _.forEach(Game.creeps, function(creep: Creep) {
         _.forEach(managers, function(manager: Mngr.Manager) {
