@@ -245,7 +245,7 @@ export class HarvesterManager extends Mngr.Manager {
   _getRoomCostMatrix(room: Room): CostMatrix {
     let costs: CostMatrix = PathFinder.CostMatrix;
     // Do a useless pathfind and steal the passed in CostMatrix and return that.
-    room.findPath(new RoomPosition(0, 1, room.name), new RoomPosition(1, 0, room.name), {
+    room.findPath(new RoomPosition(0, 1, room.name), new RoomPosition(2, 0, room.name), {
       "ignoreCreeps": true,
       "ignoreRoads": true,
       "maxOps": 3,
