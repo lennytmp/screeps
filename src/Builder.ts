@@ -48,7 +48,7 @@ export class Builder {
     }
     let clb: ((c: Ed.EnergyContainer, e: number) => void) | undefined = undefined;
     if (!creep.memory.working) {
-      priority--; // I'm not working, my priority is higher. 
+      priority--; // I'm not working, my priority is higher.
       let self = this;
       clb = function(c: Ed.EnergyContainer, e: number) {
         if (creep.pos.isNearTo(c.obj)) {

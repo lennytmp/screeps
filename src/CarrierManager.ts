@@ -11,7 +11,7 @@ type DeliveryRequest = {
 
 export class CarrierManager extends Mngr.Manager {
   static workQueue: DeliveryRequest[] = [];
-  
+
   readonly role = 'carrier';
   carriers: C.Carrier[] = [];
   readonly unitPriority: number = 50;
