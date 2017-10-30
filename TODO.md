@@ -11,6 +11,6 @@
 1. Make Carriers fill up completely before starting to give away their energy
 1. Consider making the *Manager return which creep-configurations it wants, and let the generic Manager spawn/kill based on that.
 
-# Discussion
+# Known bugs
 
-* Should we place our first spawner as close to the source as possibe?
+1. Mining positions could be on swamps as well (currently on plain only).
