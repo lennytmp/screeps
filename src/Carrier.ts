@@ -7,6 +7,9 @@ export class Carrier {
   assigned: boolean;
   moveRequested: boolean = false;
 
+  target: Ed.EnergyContainer | null = null;
+  offerEnergy: number = 0;
+
   constructor(creep: Creep) {
     this.creep = creep;
     if (creep.memory.fetching && creep.carry.energy == creep.carryCapacity) {
@@ -16,10 +19,20 @@ export class Carrier {
     }
   }
 
-  run(target: Ed.EnergyContainer, e: number): void {
+  run(): void {
     let creep = this.creep;
-    if (target.giveEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
-      Utils.moveTo(creep, target.obj.pos);
+    if (this.target == null) {
+      return;
+    }
+    let myContainer = new Ed.EnergyContainer(creep);
+    if (this.offerEnergy > 0) {
+      if (myContainer.giveEnergy(this.target, this.offerEnergy) == ERR_NOT_IN_RANGE) {
+        Utils.moveTo(creep, this.target.obj.pos);
+      }
+    } else {
+      if (this.target.giveEnergy(myContainer, -this.offerEnergy) == ERR_NOT_IN_RANGE) {
+        Utils.moveTo(creep, this.target.obj.pos);
+      }
     }
   }
 
@@ -29,15 +42,17 @@ export class Carrier {
     var self = this;
     if (creepCarry > 0) {
       Ed.EnergyDistributor.registerOffer(
-          new Ed.EnergyContainer(creep),
-          creepCarry,
-          function(c: Ed.EnergyContainer, e: number) {
-            let x = new Ed.EnergyContainer(creep);
-            if (x.giveEnergy(c, e) == ERR_NOT_IN_RANGE) {
-              Utils.moveTo(creep, c.obj.pos);
-              self.moveRequested = true;
-            }
-          });
+        new Ed.EnergyContainer(creep),
+        creepCarry,
+        function(c: Ed.EnergyContainer, e: number): boolean {
+          if (self.target != null) {
+            return false;
+          }
+          self.target = c;
+          self.offerEnergy = e;
+          return true;
+        }
+      );
     }
   }
 }

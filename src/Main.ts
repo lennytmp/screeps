@@ -34,13 +34,18 @@ export function loop() {
     Memory.stats['cpu.bucket'] = Game.cpu.bucket
 
     //register living creeps
-    _.forEach(Game.creeps, function(creep: Creep) {
-        _.forEach(managers, function(manager: Mngr.Manager) {
-            if (creep.name.startsWith(manager.role)) {
-              manager.registerMinion(creep);
-            }
-        });
-    });
+    for (let i in Game.creeps) {
+      let creep = Game.creeps[i];
+      if (creep.spawning) {
+        continue;
+      }
+      for (let k in managers) {
+        let manager = managers[k];
+        if (creep.name.startsWith(manager.role)) {
+          manager.registerMinion(creep);
+        }
+      }
+    }
     profiler.registerEvent("register living creeps");
 
     let spawner = Game.spawns['Spawn1'];
@@ -96,6 +101,7 @@ export function loop() {
     profiler.registerEvent("orders generation");
 
     Ed.EnergyDistributor.marketMatch();
+    profiler.registerEvent("market match");
 
     // command minions
     _.forEach(managers, function(manager: Mngr.Manager) {
@@ -105,7 +111,7 @@ export function loop() {
 
     Memory.previousTick = Game.time;
 
-    if (profile && profiler.getDuration() > 10) {
+    if (profile) {
       console.log(profiler.getOutput());
     }
   } catch(e) {

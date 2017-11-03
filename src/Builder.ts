@@ -3,8 +3,10 @@ import * as Utils from "./Utils";
 
 export class Builder {
 
-  moveRequested = false;
   creep: Creep;
+
+  assignedEnergyContainer: Ed.EnergyContainer | null = null;
+  energyToRequest: number = 0;
 
   constructor(creep: Creep) {
     this.creep = creep;
@@ -17,10 +19,16 @@ export class Builder {
   }
 
   run(mustUpgrade: boolean): void {
-    if (this.moveRequested) {
-      return;
-    }
     let creep = this.creep;
+    let container = this.assignedEnergyContainer;
+    if (container != null) {
+      if (creep.pos.isNearTo(container.obj)) {
+        container.giveEnergy(new Ed.EnergyContainer(creep), this.energyToRequest);
+      } else {
+        Utils.moveTo(creep, container.obj.pos);
+        return;
+      }
+    }
     let target: ConstructionSite | StructureController | null = null;
     let err: number = OK;
     if (!mustUpgrade) {
@@ -51,12 +59,8 @@ export class Builder {
       priority--; // I'm not working, my priority is higher.
       let self = this;
       clb = function(c: Ed.EnergyContainer, e: number) {
-        if (creep.pos.isNearTo(c.obj)) {
-          c.giveEnergy(new Ed.EnergyContainer(creep), e);
-        } else {
-          Utils.moveTo(creep, c.obj.pos);
-          self.moveRequested = true;
-        }
+        self.assignedEnergyContainer = c;
+        self.energyToRequest = e;
       };
     }
     Ed.EnergyDistributor.registerRequest(new Ed.EnergyContainer(creep),

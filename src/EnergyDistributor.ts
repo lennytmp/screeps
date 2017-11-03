@@ -12,7 +12,7 @@ type EnergyRequest = {
 type EnergyOffer = {
   provider: EnergyContainer,
   energy: number,
-  clb?: (c: EnergyContainer, e: number) => void
+  clb?: (c: EnergyContainer, e: number) => boolean
 }
 
 export type EnergyContainerSource = StructureSpawn | StructureExtension | StructureContainer | Creep | Resource;
@@ -129,6 +129,7 @@ export class EnergyDistributor {
     EnergyDistributor.requests.sort(function(a: EnergyRequest, b: EnergyRequest) {
       return a.priority - b.priority;
     });
+    let counter = 0;
     for (let request of EnergyDistributor.requests) {
       let spawnRequest = request.consumer.obj instanceof StructureSpawn;
       if (spawnRequest) {
@@ -140,10 +141,12 @@ export class EnergyDistributor {
       }
       let bestOffer: EnergyOffer | null;
       while (request.energy > 0 && (bestOffer = EnergyDistributor.findBestOffer(request))) {
+        counter++;
         let charge: number = Math.min(bestOffer.energy, request.energy);
         let ok = C.CarrierManager.requestTransfer(bestOffer.provider, charge);
         if (ok) {
           EnergyDistributor.transact(request, bestOffer, spawnRequest, false);
+          continue;
         }
         EnergyDistributor.transact(request, bestOffer, spawnRequest, true);
       }
@@ -151,11 +154,11 @@ export class EnergyDistributor {
     // always request carriers for harvesters
     for (let offer of EnergyDistributor.offers) {
       if (offer.energy == 0 || !Utils.isCreep(offer.provider)) {
-        return;
+        continue;
       }
       let creep = <Creep>offer.provider.obj;
       if (creep.name.startsWith("harvester")) {
-        return;
+        continue;
       }
       C.CarrierManager.requestTransfer(offer.provider, offer.energy);
     }
@@ -200,8 +203,10 @@ export class EnergyDistributor {
     let charge: number = Math.min(offer.energy, request.energy);
     request.energy -= charge;
     offer.energy -= charge;
-    if (offer.clb) {
-      offer.clb(request.consumer, charge);
+    if (offer.clb && offer.clb(request.consumer, charge)) {
+        // Callback is present and returns true only for offers that can
+        // satisfy only one request at a tick.
+        offer.energy = 0;
     }
     if (!fulfillNever && (request.energy == 0 || fulfillAlways)) {
       request.fulfilled = true;
