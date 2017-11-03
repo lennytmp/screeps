@@ -35,7 +35,7 @@ export class Builder {
       err = creep.upgradeController(target);
     }
     if (err == ERR_NOT_IN_RANGE && creep.memory.working) {
-      creep.moveTo(target!);
+      Utils.moveTo(creep, target!.pos);
     }
   }
 
@@ -54,7 +54,7 @@ export class Builder {
         if (creep.pos.isNearTo(c.obj)) {
           c.giveEnergy(new Ed.EnergyContainer(creep), e);
         } else {
-          creep.moveTo(c.obj);
+          Utils.moveTo(creep, c.obj.pos);
           self.moveRequested = true;
         }
       };

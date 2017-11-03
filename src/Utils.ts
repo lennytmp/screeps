@@ -117,3 +117,7 @@ export function shouldBeRenewed(creep: Creep): boolean {
   return creep.room.energyCapacityAvailable < getCreepPrice(creep) * RENEWAL_COEF;
 }
 
+export function moveTo(creep: Creep, target: RoomPosition): void {
+  creep.moveTo(target, {"reusePath": 100});
+}
+

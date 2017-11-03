@@ -30,7 +30,7 @@ export class Harvester {
   run(src: string, dst: Structure): void {
     let creep = this.creep;
     if (creep.memory.isReviving) {
-      creep.moveTo(Game.spawns['Spawn1']);
+      Utils.moveTo(creep, Game.spawns['Spawn1'].pos);
       return;
     }
     let source = <Source>Game.getObjectById(src);
@@ -38,14 +38,14 @@ export class Harvester {
     if (creep.memory.isHarvesting) {
       let mp = Utils.unserializeRoomPosition(creep.memory.mp);
       if (!creep.pos.isEqualTo(mp)) {
-        creep.moveTo(mp);
+        Utils.moveTo(creep, mp);
       }
     }
     // Always try to transfer into our consumer.
     if (creep.transfer(dst, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
       if (!creep.memory.isHarvesting) {
         // But only move if we're full (or were full and haven't dropped everything yet)
-        creep.moveTo(dst);
+        Utils.moveTo(creep, dst.pos);
       }
     }
   }

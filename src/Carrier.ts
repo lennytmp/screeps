@@ -19,7 +19,7 @@ export class Carrier {
   run(target: Ed.EnergyContainer, e: number): void {
     let creep = this.creep;
     if (target.giveEnergy(new Ed.EnergyContainer(creep), e) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(target.obj);
+      Utils.moveTo(creep, target.obj.pos);
     }
   }
 
@@ -34,7 +34,7 @@ export class Carrier {
           function(c: Ed.EnergyContainer, e: number) {
             let x = new Ed.EnergyContainer(creep);
             if (x.giveEnergy(c, e) == ERR_NOT_IN_RANGE) {
-              creep.moveTo(c.obj);
+              Utils.moveTo(creep, c.obj.pos);
               self.moveRequested = true;
             }
           });
